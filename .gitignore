@@ -1,0 +1,16 @@
+.DS_Store
+.settings
+bin
+META-INF
+model
+src-gen
+xtend-gen
+.classpath
+.project
+.antlr-generator-3.2.0-patch.jar
+build.properties
+plugin.xml
+plugin.xml_gen
+GenerateCobol.mwe2
+CobolRuntimeModule.xtend
+CobolStandaloneSetup.xtend

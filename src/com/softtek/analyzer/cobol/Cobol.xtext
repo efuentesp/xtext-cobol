@@ -1,0 +1,1849 @@
+grammar com.softtek.analyzer.cobol.Cobol with org.eclipse.xtext.common.Terminals
+
+generate cobol "http://www.softtek.com/analyzer/cobol/Cobol"
+
+
+/*
+* Based on:
+* COBOL 85 Grammar for ANTLR4
+*
+* This is a COBOL 85 grammar, which is part of the COBOL parser at
+* https://github.com/uwol/cobol85parser.
+*/
+
+
+Model:
+	 programUnit+=ProgramUnit
+;
+
+ProgramUnit :   identification=IdentificationDivision
+	            environmentDivision=EnvironmentDivision? 
+	            dataDivision=DataDivision? 
+	            procedureDivision=ProcedureDivision? 
+//	            programUnit+=ProgramUnit* 
+	            endprogram=EndProgramStatement 
+;
+
+EndProgramStatement: 'END' 'PROGRAM' program= ID '.';
+
+
+IdentificationDivision : ('IDENTIFICATION' | 'ID') 'DIVISION' '.' 
+	                     (programIdParaGraph=ProgramIdParagraph)  
+	                     (identificationDivisionBody+=IdentificationDivisionBody*)
+;
+   
+
+IdentificationDivisionBody : AuthorParagraph 
+	                       | InstallationParagraph
+	                       | DateWrittenParagraph
+	                       | DateCompiledParagraph
+	                       | SecurityParagraph
+	                       | RemarksParagraph;
+   
+
+ProgramIdParagraph : 'PROGRAM-ID' '.' programName=ID ('IS'? ('COMMON' | 'INITIAL' | 'LIBRARY' | 'DEFINITION' | 'RECURSIVE') 'PROGRAM'?)? '.'?;
+
+AuthorParagraph : {AuthorParagraph} 'AUTHOR' '.' (autor=ID) ;
+
+InstallationParagraph : {InstallationParagraph} 'INSTALLATION' '.' (installation+=ID)?;
+
+DateWrittenParagraph : {DateWrittenParagraph} 'DATE-WRITTEN' '.' (dateWritten+=ID)?;
+
+DateCompiledParagraph : {DateCompiledParagraph} 'DATE-COMPILED' '.' (dateCompiled+=ID)?;
+
+SecurityParagraph : {SecurityParagraph} 'SECURITY' '.' (security+=ID)?;
+
+RemarksParagraph : {RemarksParagraph} 'REMARKS' '.' (remarks+=ID)?;
+
+
+// --- environment division --------------------------------------------------------------------
+
+EnvironmentDivision : {EnvironmentDivision} 'ENVIRONMENT' 'DIVISION' '.' (environmentDivisionBody=EnvironmentDivisionBody) ;
+
+EnvironmentDivisionBody : ConfigurationSection 
+	                     | InputOutputSection
+	                     | SpecialNamesParagraph;
+
+
+ConfigurationSection :  configuration='CONFIGURATION' 'SECTION' '.' (configurationSectionParagraph+=ConfigurationSectionParagraph*);
+
+
+ConfigurationSectionParagraph
+   : SourceComputerParagraph | ObjectComputerParagraph | SpecialNamesParagraph
+   // strictly, specialNamesParagraph does not belong into configurationSectionParagraph, but ibm-cobol allows this
+   ;
+
+SourceComputerParagraph : 'SOURCE-COMPUTER' '.' computerName=ID ('WITH'? 'DEBUGGING' 'MODE')? '.';
+
+
+ObjectComputerParagraph : 'OBJECT-COMPUTER' '.' computerName=ID (objectComputerClause+=ObjectComputerClause*) '.';
+
+ObjectComputerClause  : memorySizeClause=MemorySizeClause 
+   	                 | diskSizeClause=DiskSizeClause 
+   	                 | collatingSequenceClause=CollatingSequenceClause 
+   	                 | segmentLimitClause=SegmentLimitClause 
+   	                 | characterSetClause=CharacterSetClause;
+
+MemorySizeClause : 'MEMORY' 'SIZE'? size=Literal type=('WORDS' | 'CHARACTERS' | 'MODULES')? ;
+
+DiskSizeClause : 'DISK' 'SIZE'? 'IS'? size=Literal type=('WORDS' | 'MODULES')?;
+
+CollatingSequenceClause
+   : 'PROGRAM'? 'COLLATING'? 'SEQUENCE' ('IS'? (alphabetName+=ID)) alphanumericSequence=CollatingSequenceClauseAlphanumeric? nationalSequence=CollatingSequenceClauseNational?
+   ;
+
+CollatingSequenceClauseAlphanumeric : 'FOR'? 'ALPHANUMERIC' 'IS'? id=ID ;
+
+CollatingSequenceClauseNational : 'FOR'? 'NATIONAL' 'IS'? id=ID;
+   
+SegmentLimitClause : 'SEGMENT-LIMIT' 'IS'? int=Literal;
+
+CharacterSetClause : 'CHARACTER' 'SET' '.' ;
+
+SpecialNamesParagraph : specialNames='SPECIAL-NAMES' '.' (specialNameClause+=SpecialNameClause '.')?;
+
+SpecialNameClause
+   : channelClause=ChannelClause 
+   	| odtClause=OdtClause 
+   	| alphabetClause=AlphabetClause 
+   	| classClause=ClassClause 
+   	| currencySignClause=CurrencySignClause 
+   	| decimalPointClause=DecimalPointClause 
+   	| symbolicCharactersClause=SymbolicCharactersClause 
+   	| environmentSwitchNameClause=EnvironmentSwitchNameClause 
+   	| defaultDisplaySignClause=DefaultDisplaySignClause 
+   	| defaultComputationalSignClause=DefaultComputationalSignClause 
+   	| reserveNetworkClause=ReserveNetworkClause
+   ;
+
+AlphabetClause : AlphabetClauseFormat1 | AlphabetClauseFormat2;
+
+AlphabetClauseFormat1
+   : alphabet='ALPHABET' idClause=ID (for='FOR' alphanumeric='ALPHANUMERIC')? is='IS'? 
+   	 ('EBCDIC' | 'ASCII' | 'STANDARD-1' | 'STANDARD-2' | 'NATIVE' | id=ID | alphabetLiterals=AlphabetLiterals)
+   ;
+
+AlphabetLiterals: literal=STRING (alphabet=AlphabetThrough | (alphabetAlso+=AlphabetAlso))?;
+
+AlphabetThrough:  through=('THROUGH' | 'THRU') name=STRING;
+
+AlphabetAlso : alphabet='ALSO' literal+=STRING;
+
+AlphabetClauseFormat2 : alphabet='ALPHABET' id=ID 'FOR'? national='NATIONAL' is='IS'? ('NATIVE' | 'CCSVERSION' literal=STRING);
+
+ChannelClause : channel='CHANNEL' int=Literal is='IS'? id=ID;
+
+ClassClause
+   : class='CLASS' id=ID (for='FOR'? (alpha='ALPHANUMERIC' |national='NATIONAL'))? is='IS'? (classClauseThrough+=ClassClauseThrough)
+   ;
+
+ClassClauseThrough
+   : classClauseFrom=(ID|STRING) (('THROUGH' | 'THRU') classClauseTo=(ID|STRING))?
+   ;
+
+
+CurrencySignClause
+   : 'CURRENCY' 'SIGN'? 'IS'? currency=STRING ('WITH'? 'PICTURE' 'SYMBOL' symbol=STRING)?
+   ;
+
+DecimalPointClause
+   : decimal='DECIMAL-POINT' 'IS'? comma='COMMA'
+   ;
+
+DefaultComputationalSignClause
+   : default='DEFAULT' type=('COMPUTATIONAL' | 'COMP')? ('SIGN' 'IS'?)? leading=('LEADING' | 'TRAILING')? ('SEPARATE' 'CHARACTER'?)
+   ;
+
+DefaultDisplaySignClause
+   : default='DEFAULT-DISPLAY' ('SIGN' 'IS'?)? leading=('LEADING' | 'TRAILING') ('SEPARATE' 'CHARACTER'?)?
+   ;
+
+EnvironmentSwitchNameClause
+   : (id=ID) is='IS'? (mnemonic=ID) (specialnames=EnvironmentSwitchNameSpecialNamesStatusPhrase?) 
+   	| specialnames=EnvironmentSwitchNameSpecialNamesStatusPhrase
+   ;                                         
+
+EnvironmentSwitchNameSpecialNamesStatusPhrase
+   : onOff=('OFF' | 'ON') 'STATUS'? 'IS'? onOffCondition1=Condition (onOffCond=('OFF' | 'ON') 'STATUS'? 'IS'? onOffCondition2=Condition)? 
+//   	| 'OFF' 'STATUS'? 'IS'? offConditionStatus=Condition ('ON' 'STATUS'? 'IS'? onConditionStatus=Condition)?
+   ;
+
+OdtClause : odtClause='ODT' 'IS'? odt=ID;
+
+ReserveNetworkClause : reserve='RESERVE' words='WORDS'? list='LIST'? is='IS'? network='NETWORK' capable='CAPABLE'?;
+
+SymbolicCharactersClause
+   : symbolic='SYMBOLIC' characters='CHARACTERS'? (for='FOR'? (alpha='ALPHANUMERIC' | national='NATIONAL'))? (symbolicCharacters+=SymbolicCharacters) ('IN' alphabetName=ID)?
+   ;
+
+SymbolicCharacters : (symbolicCharacter+=ID) ('IS' | 'ARE')? (int=Literal);
+
+InputOutputSection : 'INPUT-OUTPUT' 'SECTION' '.' inputOutputSectionParagraph+=InputOutputSectionParagraph*;
+
+InputOutputSectionParagraph : FileControlParagraph | IoControlParagraph;
+
+FileControlParagraph : 'FILE-CONTROL' ('.'?) (filecontrol+=FileControlEntry)* '.';
+
+FileControlEntry : selectClause=SelectClause fileControlClauses+=FileControlClause*;
+
+SelectClause : 'SELECT' 'OPTIONAL'? fileName=FileName;
+
+FileControlClause
+   : //assignClause=AssignClause 
+   	  reserveClause=ReserveClause 
+   	| organizationClause=OrganizationClause 
+   	| paddingCharacterClause=PaddingCharacterClause 
+   	| recordDelimiterClause=RecordDelimiterClause 
+   	| accessModeClause=AccessModeClause 
+   	| recordKeyClause=RecordKeyClause 
+   	//| alternateRecordKeyClause=AlternateRecordKeyClause 
+   	| fileStatusClause=FileStatusClause 
+   	//| passwordClause=PasswordClause 
+   	| relativeKeyClause=RelativeKeyClause
+   ;
+
+AssignClause
+   : 'ASSIGN' 'TO'? ('DISK' | 'DISPLAY' | 'KEYBOARD' | 'PORT' | 'PRINTER' | 'READER' | 'REMOTE' | 'TAPE' | 'VIRTUAL' | Literal)
+   ;
+
+ReserveClause : reserve='RESERVE' ('NO' | int=Literal) 'ALTERNATE'? ('AREA' | 'AREAS')?;
+
+OrganizationClause
+   : ('ORGANIZATION' 'IS'?)? ('LINE' | 'RECORD' 'BINARY' | 'RECORD' | 'BINARY')? ('SEQUENTIAL' | 'RELATIVE' | 'INDEXED');
+
+PaddingCharacterClause : 'PADDING' character='CHARACTER'? 'IS'? (qualifiedDataName=QualifiedDataName | string=STRING);
+
+RecordDelimiterClause : 'RECORD' delimiter='DELIMITER' 'IS'? ('STANDARD-1' | 'IMPLICIT' | assignmentName=AssignmentName) ;
+
+AccessModeClause : 'ACCESS' 'MODE'? 'IS'? ('SEQUENTIAL' | 'RANDOM' | 'DYNAMIC' | 'EXCLUSIVE');
+
+RecordKeyClause : record='RECORD' key=KEY? 'IS'? qualifiedDataName=QualifiedDataName password=PasswordClause? ('WITH'? 'DUPLICATES')?;
+
+AlternateRecordKeyClause : alternate='ALTERNATE' 'RECORD' key=KEY? 'IS'? qualifiedDataName=QualifiedDataName password=PasswordClause? ('WITH'? 'DUPLICATES')?;
+
+PasswordClause : password='PASSWORD' 'IS'? dataName=DataName;
+
+FileStatusClause : 'FILE'? 'STATUS' 'IS'? qualifiedDataName=QualifiedDataName qualified=QualifiedDataName? ;
+
+RelativeKeyClause : 'RELATIVE' key=KEY? 'IS'? qualifiedDataName=QualifiedDataName ;
+
+IoControlParagraph : ioControl='I-O-CONTROL' '.' (fileName=FileName '.')? (ioControlClause+=IoControlClause* '.')? ;
+
+IoControlClause : RerunClause | SameClause | MultipleFileClause | CommitmentControlClause;
+
+RerunClause : 'RERUN' ('ON' (fileName=FileName))? 'EVERY' (rerunEveryRecords=RerunEveryRecords | rerunEveryOf=RerunEveryOf | rerunEveryClock=RerunEveryClock);
+
+RerunEveryRecords : int=Literal 'RECORDS';
+
+RerunEveryOf : 'END'? 'OF'? ('REEL' | 'UNIT') 'OF' fileName=FileName;
+
+RerunEveryClock : int=Literal 'CLOCK-UNITS'?;
+
+SameClause : 'SAME' ('RECORD' | 'SORT' | 'SORT-MERGE')? 'AREA'? 'FOR'? fileName+=FileName;
+
+MultipleFileClause : 'MULTIPLE' 'FILE' 'TAPE'? 'CONTAINS'? multipleFilePosition+=MultipleFilePosition;
+
+MultipleFilePosition : fileName=FileName ('POSITION' int=Literal)?;
+
+CommitmentControlClause : 'COMMITMENT' 'CONTROL' 'FOR'? FileName;
+
+// --- data division --------------------------------------------------------------------
+
+DataDivision : 'DATA' 'DIVISION' '.' dataDivisionSection+=DataDivisionSection*;
+
+DataDivisionSection
+    : FileSection 
+    | DataBaseSection 
+    | WorkingStorageSection 
+   	| LinkageSection 
+   	| CommunicationSection 
+   	| LocalStorageSection 
+   	| ScreenSection 
+   	| ReportSection 
+   	| ProgramLibrarySection;
+
+
+FileSection : 'FILE' 'SECTION' '.' fileDescriptionEntry+=FileDescriptionEntry*;
+
+FileDescriptionEntry : fd=('FD' | 'SD') name=FileName 
+	                   ('.'? fileDescriptionEntryClause=FileDescriptionEntryClause) '.' 
+	                   dataDescriptionEntry+=DataDescriptionEntry*
+;
+
+FileDescriptionEntryClause : 
+   	                 (ExternalClause | GlobalClause | BlockContainsClause 
+                     | RecordContainsClause | LabelRecordsClause 
+                     | ValueOfClause | DataRecordsClause | LinageClause 
+                     | CodeSetClause | ReportClause | RecordingModeClause)
+;
+
+ExternalClause : 'IS'? 'EXTERNAL';
+
+GlobalClause : 'IS'? 'GLOBAL';
+
+BlockContainsClause : 'BLOCK' 'CONTAINS'? int=Literal blockContainsTo=BlockContainsTo? ('RECORDS' | 'CHARACTERS')?;
+
+BlockContainsTo : 'TO' int=Literal;
+
+RecordContainsClause : 'RECORD' (RecordContainsClauseFormat1 | RecordContainsClauseFormat2 | RecordContainsClauseFormat3);
+
+RecordContainsClauseFormat1 : 'CONTAINS'? int=Literal 'CHARACTERS'?;
+
+RecordContainsClauseFormat2
+   : is='IS'? 'VARYING' 'IN'? 'SIZE'? ('FROM'? int=Literal recordContainsTo=RecordContainsTo? 'CHARACTERS'?)? 
+   	('DEPENDING' 'ON'? qualifiedDataName=QualifiedDataName)?
+   ;
+
+RecordContainsClauseFormat3 : 'CONTAINS'? int=Literal recordContainsTo=RecordContainsTo 'CHARACTERS'?;
+
+RecordContainsTo : 'TO' int=Literal;
+
+LabelRecordsClause : 'LABEL' ('RECORD' 'IS'? | 'RECORDS' 'ARE'?) ('OMITTED' | 'STANDARD' | dataName=DataName);
+
+ValueOfClause : 'VALUE' 'OF' valuePair=ValuePair;
+
+ValuePair : id=SystemName 'IS'? (literal=Literal);
+
+DataRecordsClause : 'DATA' ('RECORD' 'IS'? | 'RECORDS' 'ARE'?) dataName=DataName;
+
+LinageClause : 'LINAGE' 'IS'? literal=Literal linageAt+=LinageAt*;
+
+LinageAt : linageFootingAt=LinageFootingAt | linageLinesAtTop=LinageLinesAtTop | linageLinesAtBottom=LinageLinesAtBottom;
+
+LinageFootingAt : 'WITH'? 'FOOTING' 'AT'? literal=Literal;
+
+LinageLinesAtTop : lines='LINES'? 'AT'? 'TOP' literal=Literal;
+
+LinageLinesAtBottom : lines='LINES'? 'AT'? 'BOTTOM' literal=Literal;
+
+RecordingModeClause: 'RECORDING' 'MODE'? 'IS'? mode=ID;
+
+CodeSetClause : 'CODE-SET' 'IS'? AlphabetName;
+
+ReportClause : ('REPORT' 'IS'? | 'REPORTS' 'ARE'?) reportName+=ReportName;
+
+// -- data base section ----------------------------------
+
+DataBaseSection : 'DATA-BASE' 'SECTION' '.' dataBaseSectionEntry+=DataBaseSectionEntry*;
+
+DataBaseSectionEntry: int=Literal literal=Literal 'INVOKE' invoke=Literal;
+
+WorkingStorageSection : 'WORKING-STORAGE' 'SECTION' '.' dataDescriptionEntry+=DataDescriptionEntry*;
+
+LinkageSection : 'LINKAGE' 'SECTION' '.' dataDescriptionEntry+=DataDescriptionEntry*;
+
+
+// -- communication section ----------------------------------
+
+CommunicationSection : 'COMMUNICATION' 'SECTION' '.' communicationDataSection+=CommunicationDataSection*; //(CommunicationDescriptionEntry | DataDescriptionEntry)*;
+
+CommunicationDataSection: (CommunicationDescriptionEntry | DataDescriptionEntry);
+
+CommunicationDescriptionEntry
+   : CommunicationDescriptionEntryFormat1 | CommunicationDescriptionEntryFormat2 | CommunicationDescriptionEntryFormat3
+   ;
+
+CommunicationDescriptionEntryFormat1
+   : 'CD' CdName 'FOR'? 'INITIAL'? 'INPUT' 
+   	((SymbolicQueueClause | SymbolicSubQueueClause | MessageDateClause | MessageTimeClause 
+   	| SymbolicSourceClause | TextLengthClause | EndKeyClause | StatusKeyClause | MessageCountClause
+   	) | DataDescName)* '.'
+   ;
+
+CommunicationDescriptionEntryFormat2
+   : 'CD' CdName 'FOR'? 'OUTPUT' 
+   	( 
+   		  destinationCountClause=DestinationCountClause 
+   		| textLengthClause=TextLengthClause 
+   		| statusKeyClause=StatusKeyClause 
+   		| destinationTableClause=DestinationTableClause 
+   		| errorKeyClause=ErrorKeyClause
+   		| symbolicDestinationClause=SymbolicDestinationClause
+   	) '.'
+   ;
+
+CommunicationDescriptionEntryFormat3
+   : 'CD' CdName 'FOR'? 'INITIAL' 'I-O' 
+   	((MessageDateClause | MessageTimeClause | SymbolicTerminalClause 
+   	| TextLengthClause | EndKeyClause | StatusKeyClause
+   	) | DataDescName)* '.'
+   ;
+
+DestinationCountClause : 'DESTINATION' 'COUNT' 'IS'? DataDescName;
+
+DestinationTableClause: 'DESTINATION' 'TABLE' 'OCCURS' int=Literal 'TIMES' ('INDEXED' 'BY' indexName=IndexName)?;
+
+EndKeyClause : 'END' KEY 'IS'? DataDescName;
+
+ErrorKeyClause : 'ERROR' KEY 'IS'? DataDescName;
+
+MessageCountClause : 'MESSAGE'? 'COUNT' 'IS'? DataDescName;
+
+MessageDateClause : 'MESSAGE' 'DATE' 'IS'? DataDescName;
+
+MessageTimeClause : 'MESSAGE' 'TIME' 'IS'? DataDescName;
+
+StatusKeyClause : 'STATUS' KEY 'IS'? DataDescName;
+
+SymbolicDestinationClause : 'SYMBOLIC'? 'DESTINATION' 'IS'? dataDescName=DataDescName;
+
+SymbolicQueueClause : 'SYMBOLIC'? 'QUEUE' 'IS'? DataDescName;
+
+SymbolicSourceClause : 'SYMBOLIC'? 'SOURCE' 'IS'? DataDescName;
+
+SymbolicTerminalClause : 'SYMBOLIC'? 'TERMINAL' 'IS'? DataDescName;
+
+SymbolicSubQueueClause : 'SYMBOLIC'? ('SUB-QUEUE-1' | 'SUB-QUEUE-2' | 'SUB-QUEUE-3') 'IS'? DataDescName;
+
+TextLengthClause : 'TEXT' 'LENGTH' 'IS'? DataDescName;
+
+LocalStorageSection : 'LOCAL-STORAGE' 'SECTION' '.' ('LD' LocalName '.')? dataDescriptionEntry+=DataDescriptionEntry*;
+
+ScreenSection: 'SCREEN' 'SECTION' '.' screenDescriptionEntry+=ScreenDescriptionEntry*;
+
+ScreenDescriptionEntry
+     : int=Literal ('FILLER' | id=ScreenName)? 
+     	(ScreenDescriptionBlankClause | ScreenDescriptionBellClause | ScreenDescriptionBlinkClause 
+     	| ScreenDescriptionEraseClause | ScreenDescriptionLightClause | ScreenDescriptionGridClause
+     	| ScreenDescriptionReverseVideoClause | ScreenDescriptionUnderlineClause 
+     	| screenDescriptionSizeClause=ScreenDescriptionSizeClause 
+     	| screenDescriptionLineClause =ScreenDescriptionLineClause
+     	| screenDescriptionColumnClause =ScreenDescriptionColumnClause
+     	| screenDescriptionForegroundColorClause =ScreenDescriptionForegroundColorClause
+     	| screenDescriptionBackgroundColorClause =ScreenDescriptionBackgroundColorClause
+     	| screenDescriptionControlClause =ScreenDescriptionControlClause
+     	| screenDescriptionValueClause =ScreenDescriptionValueClause
+     	| screenDescriptionPictureClause =ScreenDescriptionPictureClause
+     	| (screenDescriptionFromClause =ScreenDescriptionFromClause|screenDescriptionUsingClause=ScreenDescriptionUsingClause) 
+     	| screenDescriptionUsageClause =ScreenDescriptionUsageClause
+     	| ScreenDescriptionBlankWhenZeroClause 
+     	| ScreenDescriptionJustifiedClause 
+     	| ScreenDescriptionSignClause 
+     	| ScreenDescriptionAutoClause | ScreenDescriptionSecureClause 
+     	| ScreenDescriptionRequiredClause 
+     	| screenDescriptionPromptClause=ScreenDescriptionPromptClause 
+     	| ScreenDescriptionFullClause 
+     	| ScreenDescriptionZeroFillClause
+     	) '.'
+   ;
+
+ScreenDescriptionBlankClause : 'BLANK' ('SCREEN' | 'LINE');
+
+ScreenDescriptionBellClause : 'BELL' | 'BEEP' ;
+
+ScreenDescriptionBlinkClause : 'BLINK';
+
+ScreenDescriptionEraseClause : 'ERASE' ('EOL' | 'EOS');
+
+ScreenDescriptionLightClause : 'HIGHLIGHT' | 'LOWLIGHT';
+
+ScreenDescriptionGridClause : 'GRID' | 'LEFTLINE' | 'OVERLINE';
+
+ScreenDescriptionReverseVideoClause : 'REVERSE-VIDEO';
+
+ScreenDescriptionUnderlineClause : 'UNDERLINE' ;
+
+ScreenDescriptionSizeClause : 'SIZE' 'IS'? int=Literal;
+
+ScreenDescriptionLineClause : 'LINE' ('NUMBER'? 'IS'? ('PLUS' | '+' | '-'))? int=Literal;
+
+ScreenDescriptionColumnClause : ('COLUMN' | 'COL') ('NUMBER'? 'IS'? ('PLUS' | '+' | '-'))? int=Literal;
+
+ScreenDescriptionForegroundColorClause : ('FOREGROUND-COLOR' | 'FOREGROUND-COLOUR') 'IS'? int=Literal;
+
+ScreenDescriptionBackgroundColorClause : ('BACKGROUND-COLOR' | 'BACKGROUND-COLOUR') 'IS'? int=Literal;
+
+ScreenDescriptionControlClause : 'CONTROL' 'IS'? id=Literal;
+
+ScreenDescriptionValueClause : ('VALUE' 'IS'?) literal=Literal ;
+
+ScreenDescriptionPictureClause : ('PICTURE' | 'PIC') 'IS'? pictureString = PictureString;
+
+ScreenDescriptionFromClause : 'FROM' (literal=Literal) screenDescriptionToClause = ScreenDescriptionToClause?;
+
+ScreenDescriptionToClause : 'TO' id=ID;
+
+ScreenDescriptionUsingClause : 'USING' id=ID;
+
+ScreenDescriptionUsageClause : (usage='USAGE' is='IS'?) (display='DISPLAY' | display1='DISPLAY-1');
+
+ScreenDescriptionBlankWhenZeroClause : 'BLANK' 'WHEN'? 'ZERO';
+
+ScreenDescriptionJustifiedClause : ('JUSTIFIED' | 'JUST') 'RIGHT'?;
+
+ScreenDescriptionSignClause : ('SIGN' 'IS'?)? ('LEADING' | 'TRAILING') ('SEPARATE' 'CHARACTER'?)?;
+
+ScreenDescriptionAutoClause : 'AUTO' | 'AUTO-SKIP';
+
+ScreenDescriptionSecureClause : 'SECURE' | 'NO-ECHO';
+
+ScreenDescriptionRequiredClause : 'REQUIRED' | 'EMPTY-CHECK';
+
+ScreenDescriptionPromptClause : 'PROMPT' 'CHARACTER'? 'IS'? (literal=Literal) screenDescriptionPromptOccursClause=ScreenDescriptionPromptOccursClause?;
+
+ScreenDescriptionPromptOccursClause : 'OCCURS' int=Literal 'TIMES'?;
+
+ScreenDescriptionFullClause : 'FULL' | 'LENGTH-CHECK';
+
+ScreenDescriptionZeroFillClause : 'ZERO-FILL';
+
+ReportSection : 'REPORT' 'SECTION' '.' reportDescription+=ReportDescription*;
+
+ReportDescription : reportDescriptionEntry+=ReportGroupDescriptionEntry;
+
+ReportDescriptionEntry
+   : 'RD' ReportName reportDescriptionGlobalClause=ReportDescriptionGlobalClause? 
+   	(reportDescriptionPageLimitClause=ReportDescriptionPageLimitClause 
+   	 reportDescriptionHeadingClause=ReportDescriptionHeadingClause? 
+   	 reportDescriptionFirstDetailClause=ReportDescriptionFirstDetailClause? 
+   	 reportDescriptionLastDetailClause=ReportDescriptionLastDetailClause? 
+   	 reportDescriptionFootingClause=ReportDescriptionFootingClause?
+   	)? '.'
+   ;
+
+ReportDescriptionGlobalClause : 'IS'? 'GLOBAL';
+
+ReportDescriptionPageLimitClause : 'PAGE' ('LIMIT' 'IS'? | 'LIMITS' 'ARE'?)? int=Literal (lines='LINES' | line='LINE')?;
+
+ReportDescriptionHeadingClause : 'HEADING' int=Literal;
+
+ReportDescriptionFirstDetailClause : 'FIRST' 'DETAIL' int=Literal;
+
+ReportDescriptionLastDetailClause : 'LAST' 'DETAIL' int=Literal;
+
+ReportDescriptionFootingClause : 'FOOTING' int=Literal;
+
+ReportGroupDescriptionEntry
+   : ReportGroupDescriptionEntryFormat1 | ReportGroupDescriptionEntryFormat2; //| ReportGroupDescriptionEntryFormat3;
+
+ReportGroupDescriptionEntryFormat1
+   : int=Literal dataName=Literal 
+   	 reportGroupLineNumberClause=ReportGroupLineNumberClause? 
+   	 reportGroupNextGroupClause=ReportGroupNextGroupClause? 
+   	 reportGroupTypeClause=ReportGroupTypeClause 
+   	 reportGroupUsageClause=ReportGroupUsageClause? '.'
+   ;
+
+ReportGroupDescriptionEntryFormat2 : 
+	int=Literal dataName=Literal? 
+	reportGroupLineNumberClause=ReportGroupLineNumberClause? 
+	reportGroupUsageClause=ReportGroupUsageClause? '.'
+;
+
+ReportGroupDescriptionEntryFormat3
+   : int=Literal dataName=Literal? 
+   	(
+   		reportGroupPictureClause=ReportGroupPictureClause 
+	   	| reportGroupUsageClause=ReportGroupUsageClause 
+	   	| reportGroupSignClause=ReportGroupSignClause 
+	   	| reportGroupJustifiedClause=ReportGroupJustifiedClause 
+	   	| reportGroupBlankWhenZeroClause=ReportGroupBlankWhenZeroClause 
+	   	| reportGroupLineNumberClause=ReportGroupLineNumberClause 
+	   	| reportGroupColumnNumberClause=ReportGroupColumnNumberClause 
+	   	| (
+	   		reportGroupSourceClause=ReportGroupSourceClause 
+	   		| reportGroupValueClause=ReportGroupValueClause 
+	   		| reportGroupSumClause=ReportGroupSumClause 
+	   		| reportGroupResetClause=ReportGroupResetClause
+   		)
+    	| ReportGroupIndicateClause
+   	) '.';
+
+ReportGroupBlankWhenZeroClause : 'BLANK' 'WHEN'? 'ZERO';
+
+ReportGroupColumnNumberClause : 'COLUMN' 'NUMBER'? 'IS'? int=Literal;
+
+ReportGroupIndicateClause : 'GROUP' 'INDICATE'?;
+
+ReportGroupJustifiedClause : ('JUSTIFIED' | 'JUST') 'RIGHT'?;
+
+ReportGroupLineNumberClause
+   : 'LINE'? 'NUMBER'? 'IS'? (reportGroupLineNumberNextPage=ReportGroupLineNumberNextPage | reportGroupLineNumberPlus=ReportGroupLineNumberPlus);
+
+ReportGroupLineNumberNextPage : int=Literal ('ON'? 'NEXT' 'PAGE')?;
+
+ReportGroupLineNumberPlus : 'PLUS' int=Literal;
+
+ReportGroupNextGroupClause
+   : 'NEXT' 'GROUP' 'IS'? (int=Literal | reportGroupNextGroupNextPage=ReportGroupNextGroupNextPage | reportGroupNextGroupPlus=ReportGroupNextGroupPlus);
+
+ReportGroupNextGroupPlus : 'PLUS' int=Literal;
+
+ReportGroupNextGroupNextPage : next='NEXT' 'PAGE';
+
+ReportGroupPictureClause : ('PICTURE' | 'PIC') 'IS'? PictureString;
+
+ReportGroupResetClause : 'RESET' 'ON'? ('FINAL' | dataName=DataName);
+
+ReportGroupSignClause : 'SIGN' 'IS'? ('LEADING' | 'TRAILING') 'SEPARATE' 'CHARACTER'?;
+
+ReportGroupSourceClause : 'SOURCE' 'IS'? id=ID;
+
+ReportGroupSumClause : 'SUM' id+=ID ('COMMACHAR' id+=ID)* 'UPON' dataName+=DataName ('COMMACHAR' dataName+=DataName)*;
+
+//: '(' subss+=Subscript (',' subss+=Subscript)* ')'
+
+ReportGroupTypeClause : 'TYPE' 'IS'? 
+	        reportGroup=( ReportGroupTypeReportHeading | ReportGroupTypePageHeading | ReportGroupTypeControlHeading 
+	                    | ReportGroupTypeDetail | ReportGroupTypeControlFooting | ReportGroupTypePageFooting 
+	                    | ReportGroupTypeReportFooting
+	                    );
+
+ReportGroupTypeReportHeading : 'REPORT' 'HEADING' | 'RH';
+
+ReportGroupTypePageHeading : 'PAGE' 'HEADING' | 'PH';
+
+ReportGroupTypeControlHeading : ('CONTROL' 'HEADING' | 'CH') ('FINAL' | DataName);
+
+ReportGroupTypeDetail : 'DETAIL' | 'DE';
+
+ReportGroupTypeControlFooting: ('CONTROL' 'FOOTING' | 'CF') ('FINAL' | DataName);
+
+ReportGroupUsageClause: (usage='USAGE' is='IS'?)? (display='DISPLAY' | display1='DISPLAY-1') ;
+
+ReportGroupTypePageFooting: 'PAGE' 'FOOTING' | 'PF';
+
+ReportGroupTypeReportFooting : 'REPORT' 'FOOTING' | 'RF';
+
+ReportGroupValueClause : 'VALUE' 'IS'? Literal;
+
+
+ProgramLibrarySection : 'PROGRAM-LIBRARY' 'SECTION' '.' libraryDescriptionEntry+=LibraryDescriptionEntry*;
+
+LibraryDescriptionEntry : LibraryDescriptionEntryFormat1 | LibraryDescriptionEntryFormat2;
+
+LibraryDescriptionEntryFormat1
+   : 'LD' LibraryName 'EXPORT' LibraryAttributeClauseFormat1? LibraryEntryProcedureClauseFormat1?
+   ;
+
+LibraryDescriptionEntryFormat2
+   : 'LD' LibraryName 'IMPORT' LibraryIsGlobalClause? LibraryIsCommonClause?
+   	  libraryEntry+=(LibraryAttributeClauseFormat2 | LibraryEntryProcedureClauseFormat2)*
+   ;
+
+LibraryAttributeClauseFormat1
+   : 'ATTRIBUTE' ('SHARING' 'IS'? ('DONTCARE' | 'PRIVATE' | 'SHAREDBYRUNUNIT' | 'SHAREDBYALL'))?
+   ;
+
+LibraryAttributeClauseFormat2
+   : 'ATTRIBUTE' libraryAttributeFunction=LibraryAttributeFunction? ('LIBACCESS' 'IS'? ('BYFUNCTION' | 'BYTITLE'))? 
+   	 libraryAttributeParameter=LibraryAttributeParameter? libraryAttributeTitle=LibraryAttributeTitle?
+   ;
+
+LibraryAttributeFunction : 'FUNCTIONNAME' 'IS' Literal ;
+
+LibraryAttributeParameter : 'LIBPARAMETER' 'IS'? Literal;
+
+LibraryAttributeTitle : 'TITLE' 'IS'? Literal;
+
+LibraryEntryProcedureClauseFormat1 : 'ENTRY-PROCEDURE' ProgramName LibraryEntryProcedureForClause?;
+
+LibraryEntryProcedureClauseFormat2 : 'ENTRY-PROCEDURE' 
+	ProgramName libraryEntryProcedureForClause=LibraryEntryProcedureForClause? 
+	            libraryEntryProcedureWithClause=LibraryEntryProcedureWithClause? 
+	            libraryEntryProcedureUsingClause=LibraryEntryProcedureUsingClause? 
+	            libraryEntryProcedureGivingClause=LibraryEntryProcedureGivingClause?
+;
+
+LibraryEntryProcedureForClause: 'FOR' Literal ;
+
+LibraryEntryProcedureGivingClause : 'GIVING' DataName;
+
+LibraryEntryProcedureUsingClause : 'USING' library+=LibraryEntryProcedureUsingName;
+
+LibraryEntryProcedureUsingName : ID;//DataName | FileName;
+
+LibraryEntryProcedureWithClause : 'WITH' library+=LibraryEntryProcedureWithName;
+
+LibraryEntryProcedureWithName: ID;//LocalName | FileName;
+
+LibraryIsCommonClause : 'IS'? 'COMMON';
+
+LibraryIsGlobalClause: 'IS'? 'GLOBAL';
+
+
+
+DataDescriptionEntry : (level=Literal | level77='77') ('FILLER' | dataName=DataName)? data+=(DataDescriptionEntryFormat1)* '.'
+  // : data=(DataDescriptionEntryFormat1 | DataDescriptionEntryFormat2 | DataDescriptionEntryFormat3 | DataDescriptionEntryExecSql)
+   ;
+   
+DataDescriptionEntryFormat1 : 
+    	(
+   		dataRedefinesClause=DataRedefinesClause 
+	   	| dataIntegerStringClause=DataIntegerStringClause 
+	   	| dataExternalClause=DataExternalClause 
+	   	| dataGlobalClause=DataGlobalClause 
+	    | dataTypeDefClause=DataTypeDefClause 
+	   	| dataThreadLocalClause=DataThreadLocalClause 
+	   	| dataPictureClause=DataPictureClause 
+	   	| dataCommonOwnLocalClause=DataCommonOwnLocalClause 
+	   	| dataTypeClause=DataTypeClause 
+	   	| dataUsingClause=DataUsingClause 
+	   	| dataUsageClause=DataUsageClause 
+	   	| dataValueClause=DataValueClause 
+	   	| dataReceivedByClause=DataReceivedByClause 
+	   	| dataOccursClause=DataOccursClause 
+	   	| dataSignClause=DataSignClause 
+	   	| dataSynchronizedClause=DataSynchronizedClause 
+	   	| dataJustifiedClause=DataJustifiedClause 
+	   	| dataBlankWhenZeroClause=DataBlankWhenZeroClause 
+	   	| dataWithLowerBoundsClause=DataWithLowerBoundsClause 
+	   	| dataAlignedClause=DataAlignedClause 
+	   	| dataRecordAreaClause=DataRecordAreaClause
+   	)
+   ;
+
+DataRedefinesClause : 'REDEFINES' dataName = DataName;
+
+DataIntegerStringClause : 'INTEGER' | 'STRING';
+
+DataRenamesClause : 'RENAMES' tualifiedDataName=QualifiedDataName (('THROUGH' | 'THRU') thru=QualifiedDataName)?;
+
+DataExternalClause : is='IS'? external='EXTERNAL' ('BY' literal=Literal)?;
+
+DataGlobalClause : 'IS'? 'GLOBAL';
+
+DataTypeDefClause: 'IS'? 'TYPEDEF';
+
+DataThreadLocalClause: 'IS'? 'THREAD-LOCAL';
+
+DataPictureClause : ('PICTURE' | 'PIC') 'IS'? PictureString;
+
+DataCommonOwnLocalClause : 'COMMON' | 'OWN' | 'LOCAL';
+
+DataTypeClause: 'TYPE' 'IS'? ('SHORT-DATE' | 'LONG-DATE' | 'NUMERIC-DATE' | 'NUMERIC-TIME' | 'LONG-TIME');
+
+DataUsingClause : 'USING' ('LANGUAGE' | 'CONVENTION') 'OF'? dataname=DataName;
+
+DataUsageClause
+   : ('USAGE' 'IS'?)? ('BINARY' ('TRUNCATED' | 'EXTENDED')? | 'BIT' | 'COMP' | 'COMP-1' | 'COMP-2' | 'COMP-3' | 'COMP-4' | 'COMP-5' | 'COMPUTATIONAL' | 'COMPUTATIONAL-1' | 'COMPUTATIONAL-2' | 'COMPUTATIONAL-3' | 'COMPUTATIONAL-4' | 'COMPUTATIONAL-5' | 'CONTROL-POINT' | 'DATE' | 'DISPLAY' | 'DISPLAY-1' | 'DOUBLE' | 'EVENT' | 'FUNCTION-POINTER' | 'INDEX' | 'KANJI' | 'LOCK' | 'NATIONAL' | 'PACKED-DECIMAL' | 'POINTER' | 'PROCEDURE-POINTER' | 'REAL' | 'TASK')
+   ;
+   
+DataValueClause: ('VALUE' 'IS'? | 'VALUES' 'ARE'?)? dvi+=DataValueInterval (',' dvi+=DataValueInterval)*;
+
+DataValueInterval : dataValueIntervalFrom=DataValueIntervalFrom 
+   	                dataValueIntervalTo=DataValueIntervalTo?;
+
+DataValueIntervalFrom : literal=Literal /* | ID*/;
+
+DataValueIntervalTo : ('THROUGH' | 'THRU') Literal;
+
+DataReceivedByClause : 'RECEIVED'? 'BY'? ('CONTENT' | 'REFERENCE' | 'REF');
+
+DataOccursClause
+   : 'OCCURS' int=Literal dataOccursTo=DataOccursTo? 'TIMES'? ('DEPENDING' 'ON'? qualifiedDataName=QualifiedDataName)? dataOccursSort+=DataOccursSort* 
+   	('INDEXED' 'BY'? 'LOCAL'? indexName+=IndexName)?
+;
+
+DataOccursTo: 'TO' int=Literal;
+
+DataOccursSort : ('ASCENDING' | 'DESCENDING') key=KEY? 'IS'? qualifiedDataName+=QualifiedDataName;
+
+DataSynchronizedClause: ('SYNCHRONIZED' | 'SYNC') ('LEFT' | 'RIGHT')?;
+
+DataSignClause : ('SIGN' 'IS'?)? ('LEADING' | 'TRAILING') ('SEPARATE' 'CHARACTER'?)?;
+
+DataJustifiedClause: ('JUSTIFIED' | 'JUST') 'RIGHT'?;
+
+DataBlankWhenZeroClause: 'BLANK' 'WHEN'? ( 'ZEROES' | 'ZEROS' | 'ZERO' );
+
+DataWithLowerBoundsClause : 'WITH'? 'LOWER' 'BOUNDS';
+
+DataAlignedClause : 'ALIGNED';
+
+DataRecordAreaClause: 'RECORD' 'AREA';
+
+// Conditions
+
+Condition: combinable=CombinableCondition andOrCondition+=AndOrCondition*;
+
+AndOrCondition: andOr=('AND' | 'OR') (combinableCondition=CombinableCondition) | => abbreviation=Abbreviation;
+
+CombinableCondition : not='NOT'? simpleCondition=SimpleCondition;
+
+SimpleCondition : (=> '('  condition=Condition ')') 
+	| => relationCondition=RelationCondition 
+	| => classCondition=ClassCondition 
+	| => conditionNameReference=ConditionNameReference
+;
+
+Abbreviation
+   : not='NOT'? relationalOperator=RelationalOperator? (arith=ArithmeticExpression) | => '(' arith=ArithmeticExpression ')'
+;
+
+RelationCondition :  
+	   => relationSignCondition=RelationSignCondition 
+	 | => relationArithmeticComparison=RelationArithmeticComparison 
+	 | => relationCombinedComparison=RelationCombinedComparison
+;
+
+ClassCondition
+   : identifier=Identifier 'IS'? 'NOT'? ('NUMERIC' 
+   	| 'ALPHABETIC' 
+   	| 'ALPHABETIC-LOWER' 
+   	| 'ALPHABETIC-UPPER' 
+   	| 'DBCS' 
+   	| 'KANJI' 
+   	| className=ClassName )
+   ;
+   
+RelationalOperator :   ('IS' | 'ARE') ? 
+					   ('NOT'? (
+							  'GREATER' 'THAN'? 
+						      | '>' 
+						      | 'LESS' 'THAN'? 
+						      | '<' 
+						      | 'EQUAL' 'TO'? |
+						       '='
+					   )
+                       | '<>' 
+                       | 'GREATER' 'THAN'? 'OR' 'EQUAL' 'TO'? 
+                       | '>=' 
+                       | 'LESS' 'THAN'? 'OR' 'EQUAL' 'TO'? 
+                       | '<=');
+
+ConditionNameReference : conditionName=ConditionName 
+	                     inData=InData inFile=InFile? 
+	                     conditionNameSubscriptReference=ConditionNameSubscriptReference
+	                     | inMnemonic=InMnemonic;
+
+ArithmeticExpression : multDivs=MultDivs => plusMinus+=PlusMinus*;
+
+
+RelationSignCondition : arithmeticExpression=ArithmeticExpression 'IS'? 'NOT'? ('POSITIVE' | 'NEGATIVE' | 'ZERO');
+
+RelationArithmeticComparison : arithL=ArithmeticExpression relationalOperator=RelationalOperator arithR=ArithmeticExpression;
+
+RelationCombinedComparison : arithmeticExpression=ArithmeticExpression relationalOperator=RelationalOperator '(' rel=RelationCombinedCondition ')';
+
+Identifier
+   : qualifiedDataName=QualifiedDataName | tableCall=TableCall | functionCall=FunctionCall | specialRegister=SpecialRegister
+   ;
+   
+ConditionNameSubscriptReference : '(' subss+=Subscript (',' subss+=Subscript)* ')';
+                                
+RelationCombinedCondition : arithmeticL=ArithmeticExpression (andOr=('AND' | 'OR') arithmeticR=ArithmeticExpression);
+
+PlusMinus : ('+' | '-') MultDivs;
+
+MultDivs : powers=Powers multDiv+=MultDiv*;
+
+MultDiv : ('*' | '/') powers=Powers;
+
+Powers : ('+' | '-')? basis=Basis power+=Power*;
+
+Power : '**' basis=Basis;
+
+Basis : '(' arith=ArithmeticExpression ')' | literal=Literal;  //| Literal;
+   
+InData : ('IN' | 'OF') dataName=DataName;
+
+InFile : ('IN' | 'OF') fileName=FileName;
+
+InMnemonic : ('IN' | 'OF') mnemonicName=MnemonicName;
+
+TableCall :
+   //: QualifiedDataName ('(' subs=Subscript (','? subss=Subscript)* ')')* referenceModifier=ReferenceModifier?
+    qualifiedDataName=QualifiedDataName '(' subs+=Subscript (',' subs+=Subscript)* ')' referenceModifier=ReferenceModifier?
+   ;
+   
+FunctionCall :
+  //: 'FUNCTION' FunctionName ('(' arg1=Argument (','? args=Argument)* ')')* referenceModifier=ReferenceModifier?
+     'FUNCTION'	functionName=FunctionName '(' args+=Argument (',' args+=Argument)* ')' referenceModifier=ReferenceModifier?
+   ;
+   
+SpecialRegister
+   : 'ADDRESS' 'OF' ID
+   | 'DATE' | 'DAY' | 'DAY-OF-WEEK' | 'DEBUG-CONTENTS' | 'DEBUG-ITEM' | 'DEBUG-LINE' | 'DEBUG-NAME' 
+   | 'DEBUG-SUB-1' | 'DEBUG-SUB-2' | 'DEBUG-SUB-3'| 'LENGTH' 'OF'? ID | 'LINE-COUNTER' |'LINAGE-COUNTER' 
+   | 'PAGE-COUNTER'| 'RETURN-CODE'| 'SHIFT-IN' | 'SHIFT-OUT' | 'SORT-CONTROL' | 'SORT-CORE-SIZE' 
+   | 'SORT-FILE-SIZE' | 'SORT-MESSAGE' | 'SORT-MODE-SIZE' | 'SORT-RETURN' | 'TALLY' | 'TIME'| 'WHEN-COMPILED'
+   ;
+
+Subscript
+   : 'ALL' | id=Literal int=Literal?| arithmeticExpression=ArithmeticExpression
+   ;
+   
+ReferenceModifier
+   : '(' CharacterPosition ':' length=Length? ')';
+   
+Argument
+   : /*literal=Literal  | ID */  id=ID int=Literal? | arithmeticExpression=ArithmeticExpression
+   ;
+   
+CharacterPosition: ArithmeticExpression;
+
+Length: ArithmeticExpression;
+
+// PROCEDURE DIVISION
+
+ProcedureDivision
+   : procedure='PROCEDURE' division='DIVISION' 
+   	   procedureDivisionUsingClause=ProcedureDivisionUsingClause? 
+   	   procedureDivisionGivingClause=ProcedureDivisionGivingClause? '.' 
+   	   procedureDeclaratives=ProcedureDeclaratives? 
+   	   procedureDivisionBody=ProcedureDivisionBody
+   ;
+
+ProcedureDivisionUsingClause
+   : ('USING' | 'CHAINING') procedureDivisionUsingParameter+=ProcedureDivisionUsingParameter
+   ;
+
+ProcedureDivisionUsingParameter
+   : procedureDivisionByReferencePhrase=ProcedureDivisionByReferencePhrase 
+   | procedureDivisionByValuePhrase=ProcedureDivisionByValuePhrase
+   ;
+
+ProcedureDivisionByReferencePhrase
+   : ('BY'? 'REFERENCE')? procedureDivisionByReference+=ProcedureDivisionByReference
+   ;
+   
+ProcedureDivisionByValuePhrase
+   : 'BY'? 'VALUE' procedureDivisionByValue+=ProcedureDivisionByValue
+   ;
+   
+ProcedureDivisionByReference : ('OPTIONAL'? filename=FileName) | any='ANY';
+
+ProcedureDivisionByValue : literal=Literal | any='ANY';
+
+ProcedureDivisionGivingClause
+   : ('GIVING' | 'RETURNING') DataName
+   ;
+   
+ProcedureDeclaratives
+   : 'DECLARATIVES' '.' procedureDeclarative+=ProcedureDeclarative 'END' 'DECLARATIVES' '.' 
+   ;
+   
+ProcedureDeclarative
+   : procedureSectionHeader = ProcedureSectionHeader '.' useStatement=UseStatement '.' paragraphs=Paragraphs
+   ;
+
+ProcedureSectionHeader : section=SectionName 'SECTION' int=Literal?;
+
+
+ProcedureDivisionBody
+   : paragraphs=Paragraphs procedureSection+=ProcedureSection*
+   ;
+
+ 
+
+ProcedureSection
+   : procedureSectionHeader=ProcedureSectionHeader '.' paragraphs=Paragraphs
+   ;
+
+UseStatement : 'USE' use=(UseAfterClause | UseDebugClause);
+
+Paragraphs : sentence+=Sentence* paragraph+=Paragraph*;
+
+Sentence
+   : statement+=Statement* '.'
+   ;
+
+Paragraph
+   : paragraphName=ParagraphName '.' (alteredGoTo=AlteredGoTo | sentence+=Sentence*)
+   ;
+   
+Statement :  
+	
+	(
+		accept=AcceptStatement 
+	   	| add=AddStatement 
+	   	| alter=AlterStatement 
+	   	| call=CallStatement 
+	   	| cancel=CancelStatement 
+	   	| close=CloseStatement 
+	   	| compute=ComputeStatement 
+	   	| continue=ContinueStatement 
+	   	| delete=DeleteStatement 
+	   	| disable=DisableStatement 
+	   	| display=DisplayStatement 
+	   	| divide=DivideStatement 
+	   	| enable=EnableStatement 
+	   	| entry=EntryStatement 
+	   	| evaluate=EvaluateStatement 
+	   	| exhibit=ExhibitStatement 
+	    | execCics=ExecCicsStatement 
+	    //| execSql=ExecSqlStatement 
+	    //| execSqlIms=ExecSqlImsStatement 
+	   	| exit=ExitStatement 
+	   	| generateStatement=GenerateStatement 
+	   	| goback=GobackStatement 
+	   	| goto=GoToStatement 
+	   	| if=IfStatement 
+	   	| initialize=InitializeStatement 
+	   	| initiate=InitiateStatement 
+	   	| inspect=InspectStatement 
+	   	| merge=MergeStatement 
+	   	| move=MoveStatement 
+	   	| multiply=MultiplyStatement 
+	   	| open=OpenStatement 
+	   	| perform=PerformStatement 
+	   	| purge=PurgeStatement 
+	   	| read=ReadStatement 
+	   	| receive=ReceiveStatement 
+	    | release=ReleaseStatement 
+	    | return=ReturnStatement 
+	    | rewrite=RewriteStatement 
+	    | search=SearchStatement 
+	   	| send=SendStatement 
+	    | set=SetStatement 
+	    | sort=SortStatement 
+	   	| start=StartStatement 
+	    | stop=StopStatement 
+	    | string=StringStatement 
+	    | sub=SubtractStatement 
+	    | terminate=TerminateStatement 
+	    | unstring=UnstringStatement 
+	    | write=WriteStatement
+   	)
+;
+
+UseAfterClause : 'GLOBAL'? 'AFTER' 'STANDARD'? ('EXCEPTION' | 'ERROR') 'PROCEDURE' 'ON'? useAfterOn=UseAfterOn;
+
+UseDebugClause: 'FOR'? 'DEBUGGING' 'ON'? useDebugOn+=UseDebugOn;
+
+UseAfterOn : input='INPUT' | output='OUTPUT' | io='I-O' | extend='EXTEND' | fileName+=FileName;
+
+UseDebugOn : allProc='ALL' 'PROCEDURES' | allRef='ALL' 'REFERENCES'? 'OF'? id=ID | procedureName=ProcedureName /* | fileName=FileName*/;
+
+AcceptStatement
+   : 'ACCEPT' id=ID 
+   	   (
+   	   	acceptFromDateStatement=AcceptFromDateStatement 
+   	   	| acceptFromEscapeKeyStatement=AcceptFromEscapeKeyStatement 
+   	   	| acceptFromMnemonicStatement=AcceptFromMnemonicStatement 
+   	   	| acceptMessageCountStatement=AcceptMessageCountStatement
+   	   )?
+   	   	onExceptionClause=OnExceptionClause?
+   	   	notOnExceptionClause=NotOnExceptionClause?
+   	   	'END-ACCEPT'?
+;
+
+AlteredGoTo : 'GO' 'TO'? '.';
+
+AcceptFromDateStatement
+   : 'FROM' 
+   	('DATE' 'YYYYMMDD'? | 'DAY' 'YYYYDDD'? | 'DAY-OF-WEEK' | 'TIME' | 'TIMER' 
+   	| 'TODAYS-DATE' 'MMDDYYYY'? | 'TODAYS-NAME' | 'YEAR' | 'YYYYMMDD' | 'YYYYDDD'
+   	)
+   ;
+
+AcceptFromEscapeKeyStatement : 'FROM' 'ESCAPE' KEY;
+
+AcceptFromMnemonicStatement: 'FROM' MnemonicName;
+
+AcceptMessageCountStatement: 'MESSAGE'? 'COUNT';
+
+OnExceptionClause: 'ON'? 'EXCEPTION' => (statement+=Statement)*;
+
+NotOnExceptionClause : not='NOT'? on='ON'? 'EXCEPTION' => (statement+=Statement)*;
+
+AddStatement
+   : 'ADD' (
+   		add=AddToStatement 
+   		| addGiving=AddToGivingStatement 
+   		| addCorresponding=AddCorrespondingStatement
+      ) 
+  	  onSizeErrorPhrase=OnSizeErrorPhrase?
+  	  notOnSizeErrorPhrase=NotOnSizeErrorPhrase?
+  	  'END-ADD'?
+   ;
+
+AddToStatement : AddFrom=AddFrom 'TO' addTo=AddTo;
+
+AddToGivingStatement : addFrom=AddFrom ('TO' addToGiving=AddToGiving)? 'GIVING' addGiving=AddGiving;
+
+AddCorrespondingStatement
+   : ('CORRESPONDING' | 'CORR') corr=ID 'TO' to=AddTo
+   ;
+   
+AddFrom : literal=Literal;
+
+AddTo: ID 'ROUNDED'?;
+
+OnSizeErrorPhrase : 'ON'? 'SIZE' 'ERROR' => (statement+=Statement)*;
+
+NotOnSizeErrorPhrase : not='NOT'? on='ON'? 'SIZE' 'ERROR' => (statement+=Statement)*;
+
+AlterStatement: 'ALTER' alterProceedTo=AlterProceedTo;
+
+AlterProceedTo : procedureName=ProcedureName 'TO' ('PROCEED' 'TO')? procedureNameTo=ProcedureName;
+
+AddToGiving : literal=Literal;
+
+AddGiving: id=ID 'ROUNDED'?;
+
+CallStatement
+   : 'CALL' literal=Literal //(ID | Literal) 
+   	   callUsingPhrase=CallUsingPhrase? 
+   	   callGivingPhrase=CallGivingPhrase? 
+   	   onOverflowPhrase=OnOverflowPhrase? 
+   	   onExceptionClause=OnExceptionClause? 
+   	   notOnExceptionClause=NotOnExceptionClause? 
+   	  'END-CALL'?
+   ;
+
+CallUsingPhrase : 'USING' (callUsingParameter+=CallUsingParameter)+;
+
+CallGivingPhrase : ('GIVING' | 'RETURNING') id=Literal;
+
+OnOverflowPhrase : 'ON'? 'OVERFLOW' => (statement+=Statement)*;
+
+NotOnOverflowPhrase : 'NOT' 'ON'? 'OVERFLOW' => (statement+=Statement)*;
+
+CallUsingParameter : CallByReferencePhrase | CallByValuePhrase | CallByContentPhrase;
+
+CallByReferencePhrase : ('BY'? 'REFERENCE')? (callByReference+=CallByReference)+;
+
+CallByValuePhrase : 'BY'? 'VALUE' (callByValue+=CallByValue)+;
+
+CallByContentPhrase : 'BY'? 'CONTENT' (callByContent+=CallByContent)+;
+
+CallByReference: (('ADDRESS' 'OF' | 'INTEGER' | 'STRING')? literal=Literal) | 'OMITTED';
+
+CallByValue: ('ADDRESS' 'OF' | 'LENGTH' 'OF'?)? literal=Literal;
+
+CallByContent : ('ADDRESS' 'OF' | 'LENGTH' 'OF'?)? literal=Literal | 'OMITTED';
+
+CancelStatement : 'CANCEL' cancelCall=CancelCall;
+
+CloseStatement : 'CLOSE' closeFile=CloseFile;
+
+CancelCall : libraryName=LibraryName (byTitle='BYTITLE' | byFunction='BYFUNCTION') | literal=Literal;
+
+CloseFile : fileName=FileName (
+	closeReelUnitStatement=CloseReelUnitStatement 
+	| closeRelativeStatement=CloseRelativeStatement 
+	| closePortFileIOStatement=ClosePortFileIOStatement
+)?;
+
+CloseReelUnitStatement : ('REEL' | 'UNIT') ('FOR'? 'REMOVAL')? ('WITH'? ('NO' 'REWIND' | 'LOCK'))?;
+
+CloseRelativeStatement : 'WITH'? ('NO' 'REWIND' | 'LOCK');
+
+ClosePortFileIOStatement: (withNo='WITH'? no='NO' 'WAIT' | withWait='WITH' 'WAIT') ('USING' closePortFileIOUsing=ClosePortFileIOUsing)?;
+
+ClosePortFileIOUsing
+   : closePortFileIOUsingCloseDisposition=ClosePortFileIOUsingCloseDisposition 
+   	| closePortFileIOUsingAssociatedData=ClosePortFileIOUsingAssociatedData 
+   	| closePortFileIOUsingAssociatedDataLength=ClosePortFileIOUsingAssociatedDataLength
+   ;
+   
+ClosePortFileIOUsingCloseDisposition: 'CLOSE-DISPOSITION' 'OF'? ('ABORT' | 'ORDERLY');
+
+ClosePortFileIOUsingAssociatedData : 'ASSOCIATED-DATA' int=Literal;
+
+ClosePortFileIOUsingAssociatedDataLength : 'ASSOCIATED-DATA-LENGTH' 'OF'? int=Literal;
+
+ComputeStatement
+   : 'COMPUTE' computeStore+=ComputeStore ('=' | 'EQUAL') 
+   	  arithmeticExpression=ArithmeticExpression 
+   	  onSizeErrorPhrase=OnSizeErrorPhrase?
+   	  notOnSizeErrorPhrase=NotOnSizeErrorPhrase? 
+   	  'END-COMPUTE'?
+   ;
+
+ComputeStore : id=ID 'ROUNDED'?;
+
+ContinueStatement: 'CONTINUE';
+
+DeleteStatement: 'DELETE' fineName=FileName 'RECORD'? 
+	               invalidKeyPhrase=InvalidKeyPhrase? 
+	               notInvalidKeyPhrase=NotInvalidKeyPhrase? 
+	             'END-DELETE'?
+;
+
+DisableStatement
+   : 'DISABLE' ('INPUT' 'TERMINAL'? | 'I-O' 'TERMINAL' | 'OUTPUT') cdName=CdName 'WITH'? key=KEY literal=Literal
+   ;
+
+InvalidKeyPhrase : invalid=INVALID key=KEY? => (statement+=Statement)*;
+
+NotInvalidKeyPhrase : not='NOT' invalid=INVALID key=KEY? => (statement+=Statement)*;
+
+DisplayStatement: 'DISPLAY' (displayOperand+=DisplayOperand)+ displayAt=DisplayAt? displayUpon=DisplayUpon? displayWith=DisplayWith?;
+
+DisplayOperand : /*ID |*/ literal=Literal;
+
+DisplayAt: 'AT' /*ID |*/ literal=Literal;
+
+DisplayUpon : 'UPON' environmentName=EnvironmentName;
+
+DisplayWith: 'WITH'? 'NO' 'ADVANCING';
+
+DivideStatement: 'DIVIDE' /*ID |*/ literal=Literal 
+	              (
+	              	divideIntoStatement=DivideIntoStatement 
+	              	//| divideIntoGivingStatement=DivideIntoGivingStatement 
+	              	//| divideByGivingStatement=DivideByGivingStatement
+	              ) 
+	              divideRemainder=DivideRemainder? 
+	              onSizeErrorPhrase=OnSizeErrorPhrase? 
+	              notOnSizeErrorPhrase=NotOnSizeErrorPhrase?
+	             'END-DIVIDE'?
+;
+
+DivideIntoStatement: 'INTO' id=ID 'ROUNDED'?;
+
+DivideIntoGivingStatement: 'INTO' literal=Literal divideGivingPhrase=DivideGivingPhrase?;
+
+DivideByGivingStatement: 'BY' literal=Literal divideGivingPhrase=DivideGivingPhrase?;
+
+DivideInto: id=ID 'ROUNDED'?;
+
+DivideGivingPhrase: 'GIVING' divideGiving+=DivideGiving;
+
+DivideGiving: id=ID 'ROUNDED'?;
+
+DivideRemainder: 'REMAINDER' id=ID;
+
+EnableStatement : 'ENABLE' ('INPUT' 'TERMINAL'? | 'I-O' 'TERMINAL' | 'OUTPUT') cdName=CdName 'WITH'?  literal=Literal;
+
+EntryStatement : 'ENTRY' entry=Literal ('USING' identifier+=ID)?;
+
+EvaluateStatement : 'EVALUATE' 
+	                  evaluateSelect=EvaluateSelect 
+	                  (evaluateAlsoSelect=EvaluateAlsoSelect)? 
+	                  evaluateWhenPhrase+=EvaluateWhenPhrase 
+	                  evaluateWhenOther=EvaluateWhenOther?
+	                'END-EVALUATE'?
+;
+
+EvaluateSelect : arith=ArithmeticExpression;
+
+EvaluateAlsoSelect: 'ALSO' evaluateSelect=EvaluateSelect ;
+
+EvaluateWhenPhrase: evaluateWhen=EvaluateWhen statement=Statement;
+
+EvaluateWhen : 'WHEN' evaluateCondition=EvaluateCondition evaluateAlsoCondition=EvaluateAlsoCondition;
+
+EvaluateWhenOther : 'WHEN' 'OTHER' statement=Statement;
+
+EvaluateCondition :  any='ANY' 
+	                 | 'NOT'?  evaluateValue=EvaluateValue evaluateThrough=EvaluateThrough?
+	                 | => condition=Condition 
+	                 | boolean=BooleanLiteral
+;
+
+EvaluateAlsoCondition : 'ALSO' evaluateCondition=EvaluateCondition;
+
+EvaluateValue : (arith=ArithmeticExpression);
+
+EvaluateThrough : ('THROUGH' | 'THRU') evaluateValue=EvaluateValue;
+
+ExhibitStatement: exhibit=EXHIBIT 'NAMED'? 'CHANGED'? exhibitOperand+=ExhibitOperand;
+
+ExhibitOperand: literal=Literal;
+
+ExitStatement: 'EXIT' 'PROGRAM'?;
+
+GenerateStatement: 'GENERATE' reportName=ReportName;
+
+GobackStatement: 'GOBACK';
+
+GoToStatement : 'GO' 'TO'? (goStatement=GoToStatementSimple | goDepending=GoToDependingOnStatement);
+
+GoToStatementSimple : procedureName=ProcedureName;
+
+GoToDependingOnStatement: more='MORE-LABELS' | procedureName=ProcedureName ('DEPENDING' 'ON'? id=ID)?;
+
+IfStatement: 'IF' condition=Condition ifThen=IfThen ifElse=IfElse? => endIf='END-IF'?;
+
+IfThen : then='THEN'? (next='NEXT' sentence='SENTENCE' | => statement+=Statement*);
+
+IfElse: else='ELSE' (next='NEXT' sentence='SENTENCE' | => statement+=Statement*);
+
+InitializeStatement : 'INITIALIZE' identifier+=ID initializeReplacingPhrase+=InitializeReplacingPhrase?;
+
+InitializeReplacingPhrase: 'REPLACING' initializeReplacingBy+=InitializeReplacingBy;
+
+InitializeReplacingBy
+   : (
+   		'ALPHABETIC' 
+   		| 'ALPHANUMERIC' 
+   		| 'ALPHANUMERIC-EDITED' 
+   		| 'NATIONAL' 
+   		| 'NATIONAL-EDITED' 
+   		| 'NUMERIC' 
+   		| 'NUMERIC-EDITED' 
+   		| 'DBCS' 
+   		| 'EGCS'
+     ) 'DATA'? 'BY' literal=Literal
+   ;
+   
+InitiateStatement: 'INITIATE' reportName+=ReportName;
+
+InspectStatement
+   : 'INSPECT' id=Literal 
+   	( inspectTallyingPhrase=InspectTallyingPhrase 
+    | inspectReplacingPhrase=InspectReplacingPhrase 
+   	| inspectTallyingReplacingPhrase=InspectTallyingReplacingPhrase
+   	| inspectConvertingPhrase=InspectConvertingPhrase)
+   ;
+
+InspectTallyingPhrase : 'TALLYING' (inspectFor+=InspectFor)+;
+
+InspectReplacingPhrase : 'REPLACING' (inspect+=(InspectReplacingCharacters | InspectReplacingAllLeadings))+;
+
+InspectTallyingReplacingPhrase : 'TALLYING' (inspectFor+=InspectFor)+ (inspectReplacingPhrase+=InspectReplacingPhrase)+;
+
+InspectConvertingPhrase : 'CONVERTING' id=Literal inspectTo=InspectTo (inspectBeforeAfter+=InspectBeforeAfter)*; //id=(ID | Literal)
+
+InspectFor : id=Literal 'FOR' (inspectFor+=(InspectCharacters | InspectAllLeadings))+;
+
+InspectCharacters : chars='CHARACTERS' (inspectBeforeAfter+=InspectBeforeAfter)*;
+
+InspectReplacingCharacters : chars='CHARACTERS' inspectBy=InspectBy (inspectBeforeAfter+=InspectBeforeAfter)*;
+
+InspectReplacingAllLeadings : allLeadingFirst=('ALL' | 'LEADING' | 'FIRST') (inspectReplacingAllLeading+=InspectReplacingAllLeading)+;
+
+InspectTo : 'TO' id=ID; // | Literal);
+
+InspectBeforeAfter : beforeAfter=('BEFORE' | 'AFTER') 'INITIAL'? id=Literal; //id=(ID | Literal);
+
+InspectAllLeadings : allLeading=('ALL' | 'LEADING') inspectAllLeading=InspectAllLeading;
+
+InspectReplacingAllLeading : id=Literal inspectBy=InspectBy inspectBeforeAfter=InspectBeforeAfter;
+
+InspectBy: 'BY' id=Literal; // | Literal);
+
+InspectAllLeading : id=ID inspectBeforeAfter=InspectBeforeAfter; //id=(ID | Literal)
+
+MergeStatement
+   : 'MERGE' FileName mergeOnKeyClause+=MergeOnKeyClause
+   	  mergeCollatingSequencePhrase=MergeCollatingSequencePhrase?
+   	  mergeUsing+=MergeUsing* 
+   	  mergeOutputProcedurePhrase=MergeOutputProcedurePhrase? 
+   	  mergeGivingPhrase+=MergeGivingPhrase*
+   ;
+   
+MergeOnKeyClause
+   : 'ON'? ('ASCENDING' | 'DESCENDING') key=KEY? qualifiedDataName+=QualifiedDataName
+   ;
+   
+MergeCollatingSequencePhrase
+   : 'COLLATING'? 'SEQUENCE' 'IS'? 
+   	alphabetName+=AlphabetName 
+   	mergeCollatingAlphanumeric=MergeCollatingAlphanumeric? 
+   	mergeCollatingNational=MergeCollatingNational?
+   ;
+   
+MergeUsing: 'USING' fileName+=FileName;
+
+MergeOutputProcedurePhrase : 'OUTPUT' 'PROCEDURE' 'IS'? procedureName=ProcedureName mergeOutputThrough=MergeOutputThrough?;
+
+MergeCollatingAlphanumeric : 'FOR'? 'ALPHANUMERIC' 'IS' alphabetName=AlphabetName;
+
+MergeCollatingNational: 'FOR'? 'NATIONAL' 'IS'? alphabetName=AlphabetName;
+
+MergeOutputThrough : ('THROUGH' | 'THRU') procedureName=ProcedureName;
+
+MergeGivingPhrase : 'GIVING' mergeGiving+=MergeGiving;
+
+MergeGiving : FileName ('LOCK' | 'SAVE' | 'NO' 'REWIND' | 'CRUNCH' | 'RELEASE' | 'WITH' 'REMOVE' 'CRUNCH')?;
+
+MoveStatement : 'MOVE' 'ALL'? (MoveToStatement | MoveCorrespondingToStatement);
+
+MoveToStatement : MoveToSendingArea 'TO' identifier+=ID;
+
+MoveCorrespondingToStatement : ('CORRESPONDING' | 'CORR') 
+	                           moveCorrespondingToSendingArea=MoveCorrespondingToSendingArea 'TO' identifier+=ID;
+	                           
+MoveToSendingArea : literal=Literal;
+
+MultiplyStatement
+   : 'MULTIPLY' literal=Literal 'BY' 
+   	   (
+   	   	multiplyRegular=MultiplyRegular
+   	   	// | multiplyGiving=MultiplyGiving
+   	   ) 
+   	   onSizeErrorPhrase=OnSizeErrorPhrase? 
+   	   notOnSizeErrorPhrase=NotOnSizeErrorPhrase? 
+   	 'END-MULTIPLY'?
+   ;
+
+MultiplyRegular: multiplyRegularOperand=MultiplyRegularOperand;
+
+MultiplyRegularOperand: id=ID 'ROUNDED'?;
+
+MultiplyGiving
+   : multiplyGivingOperand=MultiplyGivingOperand 'GIVING' multiplyGivingResult+=MultiplyGivingResult;
+   
+MultiplyGivingOperand: literal=Literal;
+
+MultiplyGivingResult : id=ID 'ROUNDED'?;
+
+OpenStatement : 'OPEN' openStatement+=(OpenInputStatement | OpenOutputStatement | OpenIOStatement | OpenExtendStatement);
+
+OpenInputStatement : 'INPUT' openInput+=OpenInput;
+
+OpenOutputStatement : 'OUTPUT' openOutput+=OpenOutput;
+
+OpenIOStatement : 'I-O' fileName+=FileName;
+
+OpenExtendStatement: 'EXTEND' fileName+=FileName;
+
+OpenInput : fileName=FileName ('REVERSED' | 'WITH'? 'NO' 'REWIND')?;
+
+OpenOutput : fileName=FileName ('WITH'? 'NO' 'REWIND')?;
+
+PerformStatement : 'PERFORM' (performInlineStatement=PerformInlineStatement | performProcedureStatement=PerformProcedureStatement);
+
+PerformInlineStatement : performType=PerformType? statement+=Statement* 'END-PERFORM';
+
+PerformProcedureStatement: procedureName=ProcedureName (('THROUGH' | 'THRU') procedureNameTo=ProcedureName)? 
+	                       performType=PerformType?
+;
+
+PerformType : PerformTimes | PerformUntil | PerformVarying;
+
+PerformTimes: int=Literal 'TIMES';
+
+PerformUntil : performTestClause=PerformTestClause? 'UNTIL' condition=Condition;
+
+PerformVarying : performTestClause=PerformTestClause performVaryingClause=PerformVaryingClause 
+	           | performVaryingClause=PerformVaryingClause performTestClause=PerformTestClause?
+;
+
+PerformTestClause : 'WITH'? 'TEST' ('BEFORE' | 'AFTER');
+
+PerformVaryingClause : 'VARYING' performVaryingPhrase=PerformVaryingPhrase performAfter+=PerformAfter*;
+
+PerformVaryingPhrase : id=ID performFrom=PerformFrom performBy=PerformBy performUntil=PerformUntil;
+
+PerformAfter : 'AFTER' performVaryingPhrase=PerformVaryingPhrase;
+
+PerformFrom : 'FROM' (id=ID  | arith=ArithmeticExpression);
+
+PerformBy : 'BY' (id=ID | ArithmeticExpression);
+
+PurgeStatement : 'PURGE' cdName+=CdName;
+
+ReadStatement : 'READ' fileName=FileName 'NEXT'? 'RECORD'? 
+	              readInto=ReadInto? 
+	              readWith=ReadWith? 
+	              readKey=ReadKey? 
+	              invalidKeyPhrase=InvalidKeyPhrase? 
+	              notInvalidKeyPhrase=NotInvalidKeyPhrase? 
+	              => atEndPhrase=AtEndPhrase? 
+	              => notAtEndPhrase=NotAtEndPhrase? 
+	            'END-READ'?
+;
+
+ReadInto: 'INTO' id=ID;
+
+ReadWith : 'WITH'? (('KEPT' | 'NO') 'LOCK' | 'WAIT') ;
+
+ReadKey : key=KEY 'IS'? qualifiedDataName=QualifiedDataName;
+
+AtEndPhrase : 'AT'? 'END' statement=Statement;
+
+NotAtEndPhrase : 'NOT' 'AT'? 'END' statement=Statement;
+
+ReceiveStatement :
+        'RECEIVE' (ReceiveFromStatement | ReceiveIntoStatement) 
+   	           onExceptionClause=OnExceptionClause? 
+   	           notOnExceptionClause=NotOnExceptionClause?
+   	   'END-RECEIVE'?
+;
+
+ReceiveFromStatement: dataName=DataName 'FROM' receiveFrom=ReceiveFrom 
+	                  (
+	                  	receiveBefore+=ReceiveBefore 
+	                  	| receiveWith+=ReceiveWith 
+	                  	| receiveThread+=ReceiveThread 
+	                  	| receiveSize+=ReceiveSize 
+	                  	| receiveStatus+=ReceiveStatus
+	                  )*
+;
+
+
+ReceiveIntoStatement
+   : cdName=CdName ('MESSAGE' | 'SEGMENT') 'INTO'? id=ID => receiveNoData=ReceiveNoData? => receiveWithData=ReceiveWithData?
+   ;
+   
+ReceiveBefore : 'BEFORE' 'TIME'? times=Literal;
+
+ReceiveWith : 'WITH'? 'NO' 'WAIT';
+
+ReceiveThread : 'THREAD' 'IN'? dataName=DataName;
+
+ReceiveSize : 'SIZE' 'IN'? size=Literal;
+
+ReceiveStatus : 'STATUS' 'IN'? id=ID;
+
+ReceiveFrom : 'THREAD' DataName | 'LAST' 'THREAD' | 'ANY' 'THREAD';
+
+ReceiveNoData: 'NO' 'DATA' => statement+=Statement*;
+
+ReceiveWithData : 'WITH' 'DATA' =>statement+=Statement*;
+
+ReleaseStatement : 'RELEASE' recordName=RecordName ('FROM' qualifiedDataName=QualifiedDataName)?;
+
+ReturnStatement : 'RETURN'
+	                  fileName=FileName 'RECORD'? 
+	                  returnInto=ReturnInto? 
+	                  atEndPhrase=AtEndPhrase 
+	                  notAtEndPhrase=NotAtEndPhrase? 
+	              'END-RETURN'?;
+
+ReturnInto : 'INTO' qualifiedDataName=QualifiedDataName;
+
+RewriteStatement : 'REWRITE' 
+	                   recordName=RecordName 
+	                   ('FROM' id=ID)? 
+	                   invalidKeyPhrase=InvalidKeyPhrase? 
+	                   notInvalidKeyPhrase=NotInvalidKeyPhrase? 
+	               'END-REWRITE'?
+;
+
+RewriteFrom : 'FROM' id=ID;
+
+SearchStatement : 'SEARCH' 'ALL'?
+	                qualifiedDataName=QualifiedDataName 
+	                searchVarying=SearchVarying? 
+	                atEndPhrase=AtEndPhrase? 
+	                searchWhen+=SearchWhen
+	              'END-SEARCH'?
+;
+
+SearchVarying : 'VARYING' qualifiedDataName=QualifiedDataName;
+
+SearchWhen : 'WHEN' =>condition=Condition (next='NEXT' 'SENTENCE' | => statement+=Statement*) ;
+
+SendStatement : 'SEND' (sendStatementSync=SendStatementSync | sendStatementAsync=SendStatementAsync) 
+	                   onExceptionClause=OnExceptionClause? 
+	                   notOnExceptionClause=NotOnExceptionClause?
+;
+
+SendStatementSync : literal=Literal 
+	                sendFromPhrase=SendFromPhrase? 
+	                sendWithPhrase=SendWithPhrase? 
+	                sendReplacingPhrase=SendReplacingPhrase? 
+	                sendAdvancingPhrase=SendAdvancingPhrase?
+;
+
+SendStatementAsync : 'TO' ('TOP' | 'BOTTOM') id=ID;
+
+SendFromPhrase : 'FROM' id=ID;
+
+SendWithPhrase : 'WITH' withPrase=('EGI' | 'EMI' | 'ESI' | ID) ;
+
+SendReplacingPhrase: 'REPLACING' 'LINE'?;
+
+SendAdvancingPhrase : ('BEFORE' | 'AFTER') 'ADVANCING'? 
+	                 ( sendAdvancingPage=SendAdvancingPage 
+	                 | sendAdvancingLines=SendAdvancingLines 
+	                 //| sendAdvancingMnemonic=SendAdvancingMnemonic
+	                 )
+;
+
+SendAdvancingPage : 'PAGE';
+
+SendAdvancingLines : literal=Literal ('LINE' | 'LINES')?;
+
+SendAdvancingMnemonic : mnemonicName=MnemonicName;
+
+SetStatement : 'SET' (setToStatement+=SetToStatement | setUpDownByStatement=SetUpDownByStatement);
+
+SetToStatement : setTo+=SetTo 'TO' setToValue+=SetToValue;
+
+SetUpDownByStatement : setTo+=SetTo ('UP' 'BY' | 'DOWN' 'BY') setByValue=SetByValue;
+
+SetTo: id=ID;
+
+SetToValue : on='ON' | off='OFF' | 'ENTRY'? (literal=Literal);
+
+SetByValue : literal=Literal;
+
+
+SortStatement
+   : 'SORT' FileName sortOnKeyClause+=SortOnKeyClause+ sortDuplicatesPhrase=SortDuplicatesPhrase? 
+   	 sortCollatingSequencePhrase=SortCollatingSequencePhrase? 
+   	 sortInputProcedurePhrase=SortInputProcedurePhrase? 
+   	 sortUsing+=SortUsing* sortOutputProcedurePhrase=SortOutputProcedurePhrase? 
+   	 sortGivingPhrase+=SortGivingPhrase*
+;
+
+SortOnKeyClause : 'ON'? ('ASCENDING' | 'DESCENDING') key=KEY? qualifiedDataName+=QualifiedDataName+;
+
+SortDuplicatesPhrase : 'WITH'? 'DUPLICATES' 'IN'? 'ORDER'?;
+
+SortCollatingSequencePhrase : 'COLLATING'? 'SEQUENCE' 'IS'? 
+	                  alphabetName+=AlphabetName+ 
+	                  sortCollatingAlphanumeric=SortCollatingAlphanumeric? 
+	                  sortCollatingNational=SortCollatingNational?
+;
+
+SortCollatingAlphanumeric : 'FOR'? 'ALPHANUMERIC' 'IS' alphabetName=AlphabetName;
+
+SortCollatingNational : 'FOR'? 'NATIONAL' 'IS'? alphabetName=AlphabetName;
+
+SortInputProcedurePhrase : 'INPUT' 'PROCEDURE' 'IS'? procedureName=ProcedureName sortInputThrough=SortInputThrough?;
+
+SortInputThrough : ('THROUGH' | 'THRU') procedureName=ProcedureName;
+
+SortUsing : 'USING' fileName+=FileName;
+
+SortOutputProcedurePhrase : 'OUTPUT' 'PROCEDURE' 'IS'? procedureName=ProcedureName sortOutputThrough=SortOutputThrough?;
+
+SortOutputThrough : ('THROUGH' | 'THRU') procedureName=ProcedureName;
+
+SortGivingPhrase : 'GIVING' sortGiving+=SortGiving;
+
+SortGiving : fileName=FileName ('LOCK' | 'SAVE' | 'NO' 'REWIND' | 'CRUNCH' | 'RELEASE' | 'WITH' 'REMOVE' 'CRUNCH')?;
+
+StartStatement : 'START' filenName= FileName 
+	                     startKey=StartKey? 
+	                     invalidKeyPhrase=InvalidKeyPhrase?
+	                     notInvalidKeyPhrase=NotInvalidKeyPhrase? 
+	             'END-START'?;
+
+StartKey :  key=KEY 'IS'? 
+	                     ('EQUAL' 'TO'? 
+	                      | '=' 
+	                      | 'GREATER' 'THAN'? 
+	                      | '>' 
+	                      | 'NOT' 'LESS' 'THAN'? 
+	                      | 'NOT' '<' 
+	                      | 'GREATER' 'THAN'? 'OR' 'EQUAL' 'TO'? 
+	                      | '>='
+	                      ) 
+	                    qualifiedDataName=QualifiedDataName;
+
+StopStatement : 'STOP' (run='RUN' | literal=Literal);
+
+
+StringStatement : 'STRING' (stringSendingPhrase+=StringSendingPhrase)+ 
+	                       stringIntoPhra=StringIntoPhrase 
+	                       stringWithPointerPhrase= StringWithPointerPhrase? 
+   	                       onOverflowPhrase=OnOverflowPhrase? 
+   	                       notOnOverflowPhrase=NotOnOverflowPhrase? 
+   	              'END-STRING'?;
+
+StringSendingPhrase: (stringSending+=StringSending)+ stringPhrase=(StringDelimitedByPhrase | StringForPhrase);
+
+StringSending: literal=Literal;
+
+StringDelimitedByPhrase : 'DELIMITED' 'BY'? (size='SIZE' | literal=Literal);
+
+StringForPhrase : 'FOR' literal=Literal;
+
+StringIntoPhrase : 'INTO' id=Literal;
+
+StringWithPointerPhrase: 'WITH'? 'POINTER' qualifiedDataName=QualifiedDataName;
+
+SubtractStatement : 'SUBTRACT' 
+	                 subtract=(SubtractFromStatement 
+	                  	       | SubtractFromGivingStatement 
+	                  	       | SubtractCorrespondingStatement
+	                  ) 
+	                  onSizeErrorPhrase=OnSizeErrorPhrase? 
+	                  notOnSizeErrorPhrase=NotOnSizeErrorPhrase? 
+	                'END-SUBTRACT'?;
+
+SubtractFromStatement : subtractSubtrahend=Literal 'FROM' subtractMinuend=ID 'ROUNDED'?;
+
+SubtractFromGivingStatement : subtractSubtrahend+=SubtractSubtrahend 
+                              'FROM' subtractMinuendGiving=SubtractMinuendGiving 
+                              'GIVING' subtractGiving=SubtractGiving
+;
+
+SubtractCorrespondingStatement : ('CORRESPONDING' | 'CORR') 
+	                             qualifiedDataName=QualifiedDataName
+	                            'FROM' subtractMinuendCorresponding+=SubtractMinuendCorresponding
+;
+
+SubtractSubtrahend: literal=Literal;
+
+SubtractMinuend : id=ID 'ROUNDED'?;
+
+SubtractMinuendGiving : literal=Literal;
+
+SubtractGiving : id=ID 'ROUNDED'?;
+
+SubtractMinuendCorresponding : qualifiedDataName=QualifiedDataName 'ROUNDED'?;
+
+TerminateStatement : 'TERMINATE' reportName=ReportName;
+
+UnstringStatement: 'UNSTRING' 
+	                 unstringSendingPhrase=UnstringSendingPhrase 
+	                 unstringIntoPhrase=UnstringIntoPhrase
+	                 unstringWithPointerPhrase=UnstringWithPointerPhrase? 
+	                 unstringTallyingPhrase=UnstringTallyingPhrase? 
+	                 onOverflowPhrase=OnOverflowPhrase? notOnOverflowPhrase=NotOnOverflowPhrase? 
+	               'END-UNSTRING'?;
+
+UnstringSendingPhrase : id=ID (
+	                          unstringDelimitedByPhrase=UnstringDelimitedByPhrase 
+	                          unstringOrAllPhrase+=UnstringOrAllPhrase*
+	                          )?;
+
+UnstringDelimitedByPhrase : 'DELIMITED' 'BY'? 'ALL'? literal=Literal;
+
+UnstringOrAllPhrase : 'OR' 'ALL'? literal=Literal;
+
+UnstringIntoPhrase : 'INTO' unstringInto+=UnstringInto;
+
+UnstringInto : id=ID unstringDelimiterIn=UnstringDelimiterIn? unstringCountIn=UnstringCountIn?;
+
+UnstringDelimiterIn : 'DELIMITER' 'IN'? id=ID;
+
+UnstringCountIn : 'COUNT' 'IN'? id=ID;
+
+UnstringWithPointerPhrase : 'WITH'? 'POINTER' qualifiedDataName=QualifiedDataName;
+
+UnstringTallyingPhrase : 'TALLYING' 'IN'? qualifiedDataName=QualifiedDataName;
+
+WriteStatement : 'WRITE' recordName=RecordName 
+               	    writeFromPhrase=WriteFromPhrase? 
+               	    writeAdvancingPhrase=WriteAdvancingPhrase? 
+   	                writeAtEndOfPagePhrase=WriteAtEndOfPagePhrase? 
+   	                writeNotAtEndOfPagePhrase=WriteNotAtEndOfPagePhrase? 
+   	                invalidKeyPhrase=InvalidKeyPhrase? 
+   	                notInvalidKeyPhrase=NotInvalidKeyPhrase? 
+   	             'END-WRITE'?
+;
+
+WriteFromPhrase : 'FROM' (literal=Literal);
+
+WriteAdvancingPhrase : ('BEFORE' | 'AFTER') 'ADVANCING'? 
+	                   (
+	                   	  writeAdvancingPage=WriteAdvancingPage 
+	                   	| writeAdvancingLines=WriteAdvancingLines 
+	                   //	| writeAdvancingMnemonic=WriteAdvancingMnemonic
+	                   );
+
+WriteAdvancingPage : page='PAGE';
+
+WriteAdvancingLines : literal=Literal ('LINE' | 'LINES')?;
+
+WriteAdvancingMnemonic : mnemonicName=MnemonicName ;
+
+WriteAtEndOfPagePhrase : 'AT'? ('END-OF-PAGE' | 'EOP') statement=Statement;
+
+WriteNotAtEndOfPagePhrase : 'NOT' 'AT'? ('END-OF-PAGE' | 'EOP') statement=Statement;
+
+
+ExecCicsStatement : execCICSLine+=EXECSQLLINE;
+
+ExecSqlStatement: execSQLLine+=EXECSQLLINE;
+
+ExecSqlImsStatement: execSQLIMSLine+=EXECSQLLINE;
+
+EXECSQLLINE :EXECCICS query=STRING ; //(cics=EXECCICS| sql=EXECSQL /* | ims=EXECSQLIMS*/  ) query=STRING;
+
+// IDs
+
+MoveCorrespondingToSendingArea : id=ID;
+
+AlphabetName : ID;//cobolWord
+
+AssignmentName : ID; //systemName
+ 
+BasisName : ProgramName;
+
+CdName : ID; //cobolWord;
+
+ClassName: ID; //cobolWord;
+
+ComputerName : ID;// systemName
+   
+ConditionName : ID; // cobolWord
+   
+DataName: ID;//cobolWord;
+
+DataDescName : 'FILLER' | 'CURSOR' | DataName;
+
+EnvironmentName : ID; //systemName;
+
+FileName : ID;// cobolWord;
+
+FunctionName : 'INTEGER' | 'LENGTH' | 'RANDOM' | 'SUM' | 'WHEN-COMPILED' | ID; //cobolWord
+ 
+IndexName : ID; //cobolWord;
+
+LanguageName : ID;  //systemName
+ 
+LibraryName : ID; //cobolWord
+  
+LocalName : ID; //cobolWord;
+
+MnemonicName : ID; //cobolWord
+  
+ParagraphName : id=Literal ;
+
+ProcedureName : ID; //{ProcedureName} ParagraphName section=InSection? | SectionName;
+
+ProgramName : ID; //NONNUMERICLITERAL | cobolWord;
+
+RecordName : QualifiedDataName;
+
+ReportName : QualifiedDataName;
+
+RoutineName : ID;// cobolWord ;
+
+ScreenName : ID; //cobolWord;
+
+SectionName : int=Literal;  //cobolWord | integerLiteral;
+
+SystemName : ID; // cobolWord
+  
+SymbolicCharacter : ID; //cobolWord
+   
+TextName : ID; // cobolWord
+
+
+QualifiedDataName:ID;
+
+Literal : ID | STRING
+;
+
+// PictureString:STRING;
+
+PictureString
+   : (pictureChars+=PictureChars pictureCardinality=PictureCardinality?)
+   ;
+
+PictureChars
+   : dollarChar='$' 
+   	| literal=Literal 
+   	| slashChar='/' 
+   	| commaChar=',' 
+   	| dotChar='.' 
+   	| colonChar=':' 
+   	| asteriskChar='*' 
+   	| doubleAsteriskChar='**' 
+   	| lParenthesisChar='(' 
+   	| rParenthesisChar= ')' 
+   	| plusChar='+' 
+   	| minusChar='-' 
+   	| lessThanChar='<' 
+   	| moreThanChar='>'
+   ;
+
+PictureCardinality
+   : '(' int=Literal ')'
+   ;
+
+BooleanLiteral : t='TRUE' | f='FALSE';
+
+NumericLiteral:   int=Literal;
+
+CicsDfhRespLiteral : 'DFHRESP' '(' literal=Literal ')';
+
+CicsDfhValueLiteral : 'DFHVALUE' '(' /*ID |*/ literal=Literal ')';
+
+
+terminal EXECCICS :'EXECCICS';
+terminal EXECSQL :'EXECSQL';
+terminal EXECSQLIMS: 'EXECSQLIMS';
+
+terminal INVALID : 'INVALID';
+terminal KEY : 'KEY';
+terminal EXHIBIT : 'EXHIBIT';
+@Override
+terminal ID: ('0'..'9'|'a'..'z'|'A'..'Z'|'-')+; //| ('a'..'z'|'A'..'Z'|'-') ('a'..'z'|'A'..'Z'|'-'|'0'..'9')*;
+@Override
+terminal SL_COMMENT : '*' !('\n'|'\r')* ('\r'? '\n')?;
+
