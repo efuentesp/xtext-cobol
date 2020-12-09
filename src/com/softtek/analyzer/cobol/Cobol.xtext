@@ -946,57 +946,58 @@ Paragraph
 Statement :  
 	
 	(
-		accept=AcceptStatement 
-	   	| add=AddStatement 
-	   	| alter=AlterStatement 
-	   	| call=CallStatement 
-	   	| cancel=CancelStatement 
-	   	| close=CloseStatement 
-	   	| compute=ComputeStatement 
-	   	| continue=ContinueStatement 
-	   	| delete=DeleteStatement 
-	   	| disable=DisableStatement 
-	   	| display=DisplayStatement 
-	   	| divide=DivideStatement 
-	   	| enable=EnableStatement 
-	   	| entry=EntryStatement 
-	   	| evaluate=EvaluateStatement 
-	   	| exhibit=ExhibitStatement 
-	    | execCics=ExecCicsStatement 
+		AcceptStatement 
+	   	| AddStatement 
+	   	| AlterStatement 
+	   	| CallStatement 
+	   	| CancelStatement 
+	   	| CloseStatement 
+	   	| ComputeStatement 
+	   	| ContinueStatement 
+	   	| DeleteStatement 
+	   	| DisableStatement 
+	   	| DisplayStatement 
+	   	| DivideStatement 
+	   	| EnableStatement 
+	   	| EntryStatement 
+	   	| EvaluateStatement 
+	   	| ExhibitStatement 
+	    | ExecCicsStatement 
 	    //| execSql=ExecSqlStatement 
 	    //| execSqlIms=ExecSqlImsStatement 
-	   	| exit=ExitStatement 
-	   	| generateStatement=GenerateStatement 
-	   	| goback=GobackStatement 
-	   	| goto=GoToStatement 
-	   	| if=IfStatement 
-	   	| initialize=InitializeStatement 
-	   	| initiate=InitiateStatement 
-	   	| inspect=InspectStatement 
-	   	| merge=MergeStatement 
-	   	| move=MoveStatement 
-	   	| multiply=MultiplyStatement 
-	   	| open=OpenStatement 
-	   	| perform=PerformStatement 
-	   	| purge=PurgeStatement 
-	   	| read=ReadStatement 
-	   	| receive=ReceiveStatement 
-	    | release=ReleaseStatement 
-	    | return=ReturnStatement 
-	    | rewrite=RewriteStatement 
-	    | search=SearchStatement 
-	   	| send=SendStatement 
-	    | set=SetStatement 
-	    | sort=SortStatement 
-	   	| start=StartStatement 
-	    | stop=StopStatement 
-	    | string=StringStatement 
-	    | sub=SubtractStatement 
-	    | terminate=TerminateStatement 
-	    | unstring=UnstringStatement 
-	    | write=WriteStatement
+	   	| ExitStatement 
+	   	| GenerateStatement 
+	   	| GobackStatement 
+	   	| GoToStatement 
+	   	| IfStatement 
+	   	| InitializeStatement 
+	   	| InitiateStatement 
+	   	| InspectStatement 
+	   	| MergeStatement 
+	   	| MoveStatement 
+	   	| MultiplyStatement 
+	   	| OpenStatement 
+	   	| PerformStatement 
+	   	| PurgeStatement 
+	   	| ReadStatement 
+	   	| ReceiveStatement 
+	    | ReleaseStatement 
+	    | ReturnStatement 
+	    | RewriteStatement 
+	    | SearchStatement 
+	   	| SendStatement 
+	    | SetStatement 
+	    | SortStatement 
+	   	| StartStatement 
+	    | StopStatement 
+	    | StringStatement 
+	    | SubtractStatement 
+	    | TerminateStatement 
+	    | UnstringStatement 
+	    | WriteStatement
    	)
 ;
+
 
 UseAfterClause : 'GLOBAL'? 'AFTER' 'STANDARD'? ('EXCEPTION' | 'ERROR') 'PROCEDURE' 'ON'? useAfterOn=UseAfterOn;
 
@@ -1395,9 +1396,9 @@ PerformProcedureStatement: procedureName=ProcedureName (('THROUGH' | 'THRU') pro
 	                       performType=PerformType?
 ;
 
-PerformType : PerformTimes | PerformUntil | PerformVarying;
+PerformType : performTimes=PerformTimes | performUtil=PerformUntil | performVarying=PerformVarying;
 
-PerformTimes: int=Literal 'TIMES';
+PerformTimes: times=Literal 'TIMES';
 
 PerformUntil : performTestClause=PerformTestClause? 'UNTIL' condition=Condition;
 
