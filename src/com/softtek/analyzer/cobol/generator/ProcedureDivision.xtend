@@ -28,7 +28,8 @@ class ProcedureDivision {
 			var procedures = pUnit.procedureDivision
 			
 			for(p:procedures.procedureDivisionBody.paragraphs.paragraph){
-			 print(p.paragraphName.id)
+			  // print(p.paragraphName.id)
+			   procs=procs+p.paragraphName.id+"\n"
 			   for(s:p.sentence){
 			   	 for(st:s.statement){
 			   	 	procs=procs+getStatement(st,'  ')
@@ -42,14 +43,14 @@ class ProcedureDivision {
 	
 	
 	def dispatch getStatement(IfStatement st, String spaces) '''
-	 IF «st.condition.toString()» 
+«spaces»IF «st.condition.toString()» 
 	 «IF st.ifThen.statement!==null»
 	   «FOR stm:st.ifThen.statement»
         «spaces» «getStatement(stm,spaces)»
 	   «ENDFOR»
 	 «ENDIF»
 	 «IF st.ifElse!==null»
-	     ELSE
+«spaces»ELSE
 	     «FOR stm:st.ifElse.statement»
          «spaces» «getStatement(stm,spaces)»
 	     «ENDFOR»
@@ -57,59 +58,58 @@ class ProcedureDivision {
 	'''
 	
 	def dispatch getStatement(DisplayStatement st,String spaces) '''
-	 DISPLAY
+«spaces»DISPLAY
 	'''
 	
 	def dispatch getStatement(AcceptStatement st,String spaces) '''
-	 ACCEPT
+«spaces»ACCEPT
 	'''
 	
 	def dispatch getStatement(MoveStatement st,String spaces) '''
-	 MOVE
+«spaces»MOVE
 	'''
 	
 	def dispatch getStatement(StopStatement st,String spaces) '''
-	 STOP
+«spaces»STOP
 	'''
 	
 	def dispatch getStatement(OpenStatement st,String spaces) '''
-	 OPEN
+«spaces»OPEN
 	'''
 	
 	def dispatch getStatement(CloseStatement st,String spaces) '''
-	 CLOSE
+«spaces»CLOSE
 	'''
 	
 	def dispatch getStatement(ReadStatement st,String spaces) '''
-	 READ
+«spaces»READ
 	'''
 	
 	def dispatch getStatement(WriteStatement st,String spaces) '''
-	 WRITE
+«spaces»WRITE
 	'''
 	
 	def dispatch getStatement(RewriteStatement st,String spaces) '''
-	 REWRITE
+«spaces»REWRITE
 	'''
 	
 	def dispatch getStatement(DeleteStatement st,String spaces) '''
-	 DELETE
+«spaces»DELETE
 	'''
 	
 	def dispatch getStatement(CallStatement st,String spaces) '''
-	 CALL
+«spaces»CALL
 	'''
 	
 	 
-	def dispatch getStatement(PerformStatement st, String spaces) '''
-	  
-	  PERFORM «st.performProcedureStatement.procedureName» «««performTimes(st.performInlineStatement.performType)»
+	def dispatch getStatement(PerformStatement st, String spaces) '''	  
+«spaces»PERFORM «st.performProcedureStatement.procedureName» «««performTimes(st.performInlineStatement.performType)»
 	  «IF st.performInlineStatement!==null»
 	  «FOR stm:st.performInlineStatement.statement»
 	     «spaces» «getStatement(stm,spaces)»
 	  «ENDFOR» 
 	  «ENDIF»
-
+	  
 	'''
 	
 	def performTimes(PerformType pt)'''
