@@ -8,6 +8,15 @@ import com.softtek.analyzer.cobol.cobol.IfStatement
 import com.softtek.analyzer.cobol.cobol.DisplayStatement
 import com.softtek.analyzer.cobol.cobol.AcceptStatement
 import com.softtek.analyzer.cobol.cobol.MoveStatement
+import com.softtek.analyzer.cobol.cobol.StopStatement
+import com.softtek.analyzer.cobol.cobol.CloseStatement
+import com.softtek.analyzer.cobol.cobol.OpenStatement
+import com.softtek.analyzer.cobol.cobol.RewriteStatement
+import com.softtek.analyzer.cobol.cobol.ReadStatement
+import com.softtek.analyzer.cobol.cobol.WriteStatement
+import com.softtek.analyzer.cobol.cobol.DeleteStatement
+import com.softtek.analyzer.cobol.cobol.CallStatement
+import com.softtek.analyzer.cobol.cobol.PerformType
 
 class ProcedureDivision {
 	def doGenerate(Resource resource, IFileSystemAccess2 fsa){
@@ -31,8 +40,6 @@ class ProcedureDivision {
 		return "PROCEDURE DIVISION.\n" + procs
 	}
 	
-	//def getStatement(Statement st) '''
-	//'''
 	
 	def dispatch getStatement(IfStatement st, String spaces) '''
 	 IF «st.condition.toString()» 
@@ -60,12 +67,54 @@ class ProcedureDivision {
 	def dispatch getStatement(MoveStatement st,String spaces) '''
 	 MOVE
 	'''
+	
+	def dispatch getStatement(StopStatement st,String spaces) '''
+	 STOP
+	'''
+	
+	def dispatch getStatement(OpenStatement st,String spaces) '''
+	 OPEN
+	'''
+	
+	def dispatch getStatement(CloseStatement st,String spaces) '''
+	 CLOSE
+	'''
+	
+	def dispatch getStatement(ReadStatement st,String spaces) '''
+	 READ
+	'''
+	
+	def dispatch getStatement(WriteStatement st,String spaces) '''
+	 WRITE
+	'''
+	
+	def dispatch getStatement(RewriteStatement st,String spaces) '''
+	 REWRITE
+	'''
+	
+	def dispatch getStatement(DeleteStatement st,String spaces) '''
+	 DELETE
+	'''
+	
+	def dispatch getStatement(CallStatement st,String spaces) '''
+	 CALL
+	'''
+	
 	 
 	def dispatch getStatement(PerformStatement st, String spaces) '''
-	  PERFORM «(st.performInlineStatement.performType.performTimes.times)» TIMES
+	  
+	  PERFORM «st.performProcedureStatement.procedureName» «««performTimes(st.performInlineStatement.performType)»
+	  «IF st.performInlineStatement!==null»
 	  «FOR stm:st.performInlineStatement.statement»
 	     «spaces» «getStatement(stm,spaces)»
 	  «ENDFOR» 
-	  END PERFORM.
+	  «ENDIF»
+
+	'''
+	
+	def performTimes(PerformType pt)'''
+	«IF pt.performTimes!==null»
+	 «(pt.performTimes.times)» TIMES
+	«ENDIF»
 	'''
 }

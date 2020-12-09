@@ -1390,7 +1390,7 @@ OpenOutput : fileName=FileName ('WITH'? 'NO' 'REWIND')?;
 
 PerformStatement : 'PERFORM' (performInlineStatement=PerformInlineStatement | performProcedureStatement=PerformProcedureStatement);
 
-PerformInlineStatement : performType=PerformType? statement+=Statement* 'END-PERFORM';
+PerformInlineStatement : performType=PerformType? statement+=Statement* endPerform='END-PERFORM';
 
 PerformProcedureStatement: procedureName=ProcedureName (('THROUGH' | 'THRU') procedureNameTo=ProcedureName)? 
 	                       performType=PerformType?
