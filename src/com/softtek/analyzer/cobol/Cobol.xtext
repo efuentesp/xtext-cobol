@@ -1017,7 +1017,7 @@ AcceptStatement
    	   )?
    	   	onExceptionClause=OnExceptionClause?
    	   	notOnExceptionClause=NotOnExceptionClause?
-   	   	'END-ACCEPT'?
+   	 'END-ACCEPT'?
 ;
 
 AlteredGoTo : 'GO' 'TO'? '.';
@@ -1343,9 +1343,9 @@ MergeGivingPhrase : 'GIVING' mergeGiving+=MergeGiving;
 
 MergeGiving : FileName ('LOCK' | 'SAVE' | 'NO' 'REWIND' | 'CRUNCH' | 'RELEASE' | 'WITH' 'REMOVE' 'CRUNCH')?;
 
-MoveStatement : 'MOVE' 'ALL'? (MoveToStatement | MoveCorrespondingToStatement);
+MoveStatement : 'MOVE' 'ALL'? moveTo=(MoveToStatement | MoveCorrespondingToStatement);
 
-MoveToStatement : MoveToSendingArea 'TO' identifier+=ID;
+MoveToStatement : moveToSendingArea=MoveToSendingArea 'TO' identifier+=ID;
 
 MoveCorrespondingToStatement : ('CORRESPONDING' | 'CORR') 
 	                           moveCorrespondingToSendingArea=MoveCorrespondingToSendingArea 'TO' identifier+=ID;

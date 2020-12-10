@@ -58,15 +58,15 @@ class ProcedureDivision {
 	'''
 	
 	def dispatch getStatement(DisplayStatement st,String spaces) '''
-«spaces»DISPLAY
+«spaces»DISPLAY «FOR op:st.displayOperand» «op.literal» «ENDFOR»
 	'''
 	
 	def dispatch getStatement(AcceptStatement st,String spaces) '''
-«spaces»ACCEPT
+«spaces»ACCEPT «st.id»  «IF st.acceptFromDateStatement!==null» «st.acceptFromDateStatement» «ENDIF»
 	'''
 	
 	def dispatch getStatement(MoveStatement st,String spaces) '''
-«spaces»MOVE
+«spaces»MOVE 
 	'''
 	
 	def dispatch getStatement(StopStatement st,String spaces) '''
@@ -103,7 +103,7 @@ class ProcedureDivision {
 	
 	 
 	def dispatch getStatement(PerformStatement st, String spaces) '''	  
-«spaces»PERFORM «st.performProcedureStatement.procedureName» «««performTimes(st.performInlineStatement.performType)»
+«spaces»PERFORM «st.performProcedureStatement.procedureName»  «performTimes(st.performProcedureStatement.performType)»
 	  «IF st.performInlineStatement!==null»
 	  «FOR stm:st.performInlineStatement.statement»
 	     «spaces» «getStatement(stm,spaces)»
