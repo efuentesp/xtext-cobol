@@ -527,7 +527,7 @@ ReportGroupDescriptionEntryFormat1
 ReportGroupDescriptionEntryFormat2 : 
 	int=Literal dataName=Literal? 
 	reportGroupLineNumberClause=ReportGroupLineNumberClause? 
-	reportGroupUsageClause=ReportGroupUsageClause? '.'
+	reportGroupUsageClause=ReportGroupUsageClause? dot='.'
 ;
 
 ReportGroupDescriptionEntryFormat3
@@ -663,12 +663,11 @@ LibraryIsGlobalClause: 'IS'? 'GLOBAL';
 
 
 
-DataDescriptionEntry : (level=Literal | level77='77') ('FILLER' | dataName=DataName)? data+=(DataDescriptionEntryFormat1)* '.'
+DataDescriptionEntry : level=Literal /*| level77='77')*/ ('FILLER' | dataName=DataName)? data+=(DataDescriptionEntryFormat1)* '.'
   // : data=(DataDescriptionEntryFormat1 | DataDescriptionEntryFormat2 | DataDescriptionEntryFormat3 | DataDescriptionEntryExecSql)
    ;
    
 DataDescriptionEntryFormat1 : 
-    	(
    		dataRedefinesClause=DataRedefinesClause 
 	   	| dataIntegerStringClause=DataIntegerStringClause 
 	   	| dataExternalClause=DataExternalClause 
@@ -690,33 +689,32 @@ DataDescriptionEntryFormat1 :
 	   	| dataWithLowerBoundsClause=DataWithLowerBoundsClause 
 	   	| dataAlignedClause=DataAlignedClause 
 	   	| dataRecordAreaClause=DataRecordAreaClause
-   	)
    ;
 
 DataRedefinesClause : 'REDEFINES' dataName = DataName;
 
-DataIntegerStringClause : 'INTEGER' | 'STRING';
+DataIntegerStringClause : integer='INTEGER' | string='STRING';
 
 DataRenamesClause : 'RENAMES' tualifiedDataName=QualifiedDataName (('THROUGH' | 'THRU') thru=QualifiedDataName)?;
 
 DataExternalClause : is='IS'? external='EXTERNAL' ('BY' literal=Literal)?;
 
-DataGlobalClause : 'IS'? 'GLOBAL';
+DataGlobalClause : is='IS'? global='GLOBAL';
 
-DataTypeDefClause: 'IS'? 'TYPEDEF';
+DataTypeDefClause: is='IS'? typeDef='TYPEDEF';
 
-DataThreadLocalClause: 'IS'? 'THREAD-LOCAL';
+DataThreadLocalClause: is='IS' ? threadLocal='THREAD-LOCAL';
 
 DataPictureClause : ('PICTURE' | 'PIC') 'IS'? PictureString;
 
-DataCommonOwnLocalClause : 'COMMON' | 'OWN' | 'LOCAL';
+DataCommonOwnLocalClause : dataCommonOwnLocal=('COMMON' | 'OWN' | 'LOCAL');
 
-DataTypeClause: 'TYPE' 'IS'? ('SHORT-DATE' | 'LONG-DATE' | 'NUMERIC-DATE' | 'NUMERIC-TIME' | 'LONG-TIME');
+DataTypeClause: 'TYPE' is='IS'? dataType=('SHORT-DATE' | 'LONG-DATE' | 'NUMERIC-DATE' | 'NUMERIC-TIME' | 'LONG-TIME');
 
-DataUsingClause : 'USING' ('LANGUAGE' | 'CONVENTION') 'OF'? dataname=DataName;
+DataUsingClause : 'USING' dataUsing=('LANGUAGE' | 'CONVENTION') of='OF'? dataname=DataName;
 
 DataUsageClause
-   : ('USAGE' 'IS'?)? ('BINARY' ('TRUNCATED' | 'EXTENDED')? | 'BIT' | 'COMP' | 'COMP-1' | 'COMP-2' | 'COMP-3' | 'COMP-4' | 'COMP-5' | 'COMPUTATIONAL' | 'COMPUTATIONAL-1' | 'COMPUTATIONAL-2' | 'COMPUTATIONAL-3' | 'COMPUTATIONAL-4' | 'COMPUTATIONAL-5' | 'CONTROL-POINT' | 'DATE' | 'DISPLAY' | 'DISPLAY-1' | 'DOUBLE' | 'EVENT' | 'FUNCTION-POINTER' | 'INDEX' | 'KANJI' | 'LOCK' | 'NATIONAL' | 'PACKED-DECIMAL' | 'POINTER' | 'PROCEDURE-POINTER' | 'REAL' | 'TASK')
+   : ('USAGE' is='IS'?)? ('BINARY' ('TRUNCATED' | 'EXTENDED')? | 'BIT' | 'COMP' | 'COMP-1' | 'COMP-2' | 'COMP-3' | 'COMP-4' | 'COMP-5' | 'COMPUTATIONAL' | 'COMPUTATIONAL-1' | 'COMPUTATIONAL-2' | 'COMPUTATIONAL-3' | 'COMPUTATIONAL-4' | 'COMPUTATIONAL-5' | 'CONTROL-POINT' | 'DATE' | 'DISPLAY' | 'DISPLAY-1' | 'DOUBLE' | 'EVENT' | 'FUNCTION-POINTER' | 'INDEX' | 'KANJI' | 'LOCK' | 'NATIONAL' | 'PACKED-DECIMAL' | 'POINTER' | 'PROCEDURE-POINTER' | 'REAL' | 'TASK')
    ;
    
 DataValueClause: ('VALUE' 'IS'? | 'VALUES' 'ARE'?)? dvi+=DataValueInterval (',' dvi+=DataValueInterval)*;
@@ -728,7 +726,7 @@ DataValueIntervalFrom : literal=Literal /* | ID*/;
 
 DataValueIntervalTo : ('THROUGH' | 'THRU') Literal;
 
-DataReceivedByClause : 'RECEIVED'? 'BY'? ('CONTENT' | 'REFERENCE' | 'REF');
+DataReceivedByClause : received='RECEIVED'? by='BY'? dataReceiveBy=('CONTENT' | 'REFERENCE' | 'REF');
 
 DataOccursClause
    : 'OCCURS' int=Literal dataOccursTo=DataOccursTo? 'TIMES'? ('DEPENDING' 'ON'? qualifiedDataName=QualifiedDataName)? dataOccursSort+=DataOccursSort* 
@@ -739,19 +737,19 @@ DataOccursTo: 'TO' int=Literal;
 
 DataOccursSort : ('ASCENDING' | 'DESCENDING') key=KEY? 'IS'? qualifiedDataName+=QualifiedDataName;
 
-DataSynchronizedClause: ('SYNCHRONIZED' | 'SYNC') ('LEFT' | 'RIGHT')?;
+DataSynchronizedClause: sync=('SYNCHRONIZED' | 'SYNC') side=('LEFT' | 'RIGHT')?;
 
-DataSignClause : ('SIGN' 'IS'?)? ('LEADING' | 'TRAILING') ('SEPARATE' 'CHARACTER'?)?;
+DataSignClause : ('SIGN' 'IS'?)? dataSign=('LEADING' | 'TRAILING') ('SEPARATE' 'CHARACTER'?)?;
 
-DataJustifiedClause: ('JUSTIFIED' | 'JUST') 'RIGHT'?;
+DataJustifiedClause: justified=('JUSTIFIED' | 'JUST') side='RIGHT'?;
 
-DataBlankWhenZeroClause: 'BLANK' 'WHEN'? ( 'ZEROES' | 'ZEROS' | 'ZERO' );
+DataBlankWhenZeroClause: 'BLANK' when='WHEN'? zeros=( 'ZEROES' | 'ZEROS' | 'ZERO' );
 
-DataWithLowerBoundsClause : 'WITH'? 'LOWER' 'BOUNDS';
+DataWithLowerBoundsClause : dataWith='WITH'? lower='LOWER' 'BOUNDS';
 
-DataAlignedClause : 'ALIGNED';
+DataAlignedClause : aligned='ALIGNED';
 
-DataRecordAreaClause: 'RECORD' 'AREA';
+DataRecordAreaClause: record='RECORD' area='AREA';
 
 // Conditions
 

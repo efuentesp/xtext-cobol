@@ -103,7 +103,7 @@ class ProcedureDivision {
 	
 	 
 	def dispatch getStatement(PerformStatement st, String spaces) '''	  
-«spaces»PERFORM «st.performProcedureStatement.procedureName»  «performTimes(st.performProcedureStatement.performType)»
+«spaces»PERFORM «st.performProcedureStatement.procedureName»  «««performTimes(st.performProcedureStatement.performType)»
 	  «IF st.performInlineStatement!==null»
 	  «FOR stm:st.performInlineStatement.statement»
 	     «spaces» «getStatement(stm,spaces)»
