@@ -668,29 +668,31 @@ DataDescriptionEntry : level=Literal /*| level77='77')*/ ('FILLER' | dataName=Da
    ;
    
 DataDescriptionEntryFormat1 : 
-   		dataRedefinesClause=DataRedefinesClause 
-	   	| dataIntegerStringClause=DataIntegerStringClause 
-	   	| dataExternalClause=DataExternalClause 
-	   	| dataGlobalClause=DataGlobalClause 
-	    | dataTypeDefClause=DataTypeDefClause 
-	   	| dataThreadLocalClause=DataThreadLocalClause 
-	   	| dataPictureClause=DataPictureClause 
-	   	| dataCommonOwnLocalClause=DataCommonOwnLocalClause 
-	   	| dataTypeClause=DataTypeClause 
-	   	| dataUsingClause=DataUsingClause 
-	   	| dataUsageClause=DataUsageClause 
-	   	| dataValueClause=DataValueClause 
-	   	| dataReceivedByClause=DataReceivedByClause 
-	   	| dataOccursClause=DataOccursClause 
-	   	| dataSignClause=DataSignClause 
-	   	| dataSynchronizedClause=DataSynchronizedClause 
-	   	| dataJustifiedClause=DataJustifiedClause 
-	   	| dataBlankWhenZeroClause=DataBlankWhenZeroClause 
-	   	| dataWithLowerBoundsClause=DataWithLowerBoundsClause 
-	   	| dataAlignedClause=DataAlignedClause 
-	   	| dataRecordAreaClause=DataRecordAreaClause
-   ;
-
+	   data=(
+   		  DataRedefinesClause 
+	   	| DataIntegerStringClause 
+	   	| DataExternalClause 
+	   	| DataGlobalClause 
+	    | DataTypeDefClause 
+	   	| DataThreadLocalClause 
+	   	| DataPictureClause 
+	   	| DataCommonOwnLocalClause 
+	   	| DataTypeClause 
+	   	| DataUsingClause 
+	   	| DataUsageClause 
+	   	| DataValueClause 
+	   	| DataReceivedByClause 
+	   	| DataOccursClause 
+	   	| DataSignClause 
+	   	| DataSynchronizedClause 
+	   	| DataJustifiedClause 
+	   	| DataBlankWhenZeroClause 
+	   	| DataWithLowerBoundsClause 
+	   	| DataAlignedClause 
+	   	| DataRecordAreaClause
+	   	)
+;
+  
 DataRedefinesClause : 'REDEFINES' dataName = DataName;
 
 DataIntegerStringClause : integer='INTEGER' | string='STRING';
@@ -705,7 +707,7 @@ DataTypeDefClause: is='IS'? typeDef='TYPEDEF';
 
 DataThreadLocalClause: is='IS' ? threadLocal='THREAD-LOCAL';
 
-DataPictureClause : ('PICTURE' | 'PIC') 'IS'? PictureString;
+DataPictureClause : pic=('PICTURE' | 'PIC') is='IS'? pictureString=PictureString; 
 
 DataCommonOwnLocalClause : dataCommonOwnLocal=('COMMON' | 'OWN' | 'LOCAL');
 

@@ -64,7 +64,8 @@ class DataDivision {
 	def dispatch getSection(WorkingStorageSection wStorageSection)'''
 		«IF wStorageSection.dataDescriptionEntry !== null»
 			«FOR vars: wStorageSection.dataDescriptionEntry»
-				«vars.level» «vars.dataName» «FOR formatType : vars.data»«getFormat(formatType)»«ENDFOR»
+			    
+				«vars.level» «vars.dataName» «FOR formatType : vars.data»«getVarProperty(formatType.data)»«ENDFOR»
 			«ENDFOR»
 		«ENDIF»
 	'''
@@ -75,39 +76,35 @@ class DataDivision {
    	def dispatch getSection(ReportSection rSection){}
    	def dispatch getSection(ProgramLibrarySection pLibrarySection){}
    	
-   	
-   	// FORMAT
-   	def dispatch getFormat(DataDescriptionEntryFormat1 dataDescriptionEntryFormat1)'''
-   		«getVarProperty(dataDescriptionEntryFormat1)»
-   	'''
+   
    	
 //   	def dispatch getFormat(DataDescriptionEntryFormat2 dataDescriptionEntryFormat2){}
 //   	def dispatch getFormat(DataDescriptionEntryFormat3 dataDescriptionEntryFormat3){}
 //	def dispatch getFormat(DataDescriptionEntryExecSql dataDescriptionEntryFormat3){}
 	
 	// VARS
-	def dispatch getVarProperty(DataDescriptionEntryFormat1 dataDescriptionEntryFormat1){}
-	def dispatch getVarProperty(DataRedefinesClause dataRedefinesClause){}
-	def dispatch getVarProperty(DataIntegerStringClause dataIntegerStringClause){}
-	def dispatch getVarProperty(DataExternalClause dataExternalClause){}
-	def dispatch getVarProperty(DataGlobalClause dataGlobalClause){}
-	def dispatch getVarProperty(DataTypeDefClause dataTypeDefClause){}
-	def dispatch getVarProperty(DataThreadLocalClause dataThreadLocalClause){}
+	def dispatch getVarProperty(DataDescriptionEntryFormat1 dataDescriptionEntryFormat1)''''''
+	def dispatch getVarProperty(DataRedefinesClause dataRedefinesClause)''''''
+	def dispatch getVarProperty(DataIntegerStringClause dataIntegerStringClause)''''''
+	def dispatch getVarProperty(DataExternalClause dataExternalClause)''''''
+	def dispatch getVarProperty(DataGlobalClause dataGlobalClause)''''''
+	def dispatch getVarProperty(DataTypeDefClause dataTypeDefClause)''''''
+	def dispatch getVarProperty(DataThreadLocalClause dataThreadLocalClause)''''''
 	def dispatch getVarProperty(DataPictureClause dataPictureClause)'''
-		PIC
+		«IF dataPictureClause!==null» PIC «dataPictureClause.pictureString» «ENDIF»
 	'''
-	def dispatch getVarProperty(DataCommonOwnLocalClause dataCommonOwnLocalClause){}
-	def dispatch getVarProperty(DataTypeClause dataTypeClause){}
-	def dispatch getVarProperty(DataUsingClause dataUsingClause){}
-	def dispatch getVarProperty(DataUsageClause dataUsageClause){}
-	def dispatch getVarProperty(DataValueClause dataValueClause){}
-	def dispatch getVarProperty(DataReceivedByClause dataReceivedByClause){}
-	def dispatch getVarProperty(DataOccursClause dataOccursClause){}
-	def dispatch getVarProperty(DataSignClause dataSignClause){}
-	def dispatch getVarProperty(DataSynchronizedClause dataSynchronizedClause){}
-	def dispatch getVarProperty(DataJustifiedClause dataJustifiedClause){}
-	def dispatch getVarProperty(DataBlankWhenZeroClause dataBlankWhenZeroClause){}
-	def dispatch getVarProperty(DataWithLowerBoundsClause dataWithLowerBoundsClause){}
-	def dispatch getVarProperty(DataAlignedClause dataAlignedClause){}
-	def dispatch getVarProperty(DataRecordAreaClause dataRecordAreaClause){}
+	def dispatch getVarProperty(DataCommonOwnLocalClause dataCommonOwnLocalClause)''''''
+	def dispatch getVarProperty(DataTypeClause dataTypeClause)''''''
+	def dispatch getVarProperty(DataUsingClause dataUsingClause)''''''
+	def dispatch getVarProperty(DataUsageClause dataUsageClause)''''''
+	def dispatch getVarProperty(DataValueClause dataValueClause)''''''
+	def dispatch getVarProperty(DataReceivedByClause dataReceivedByClause)''''''
+	def dispatch getVarProperty(DataOccursClause dataOccursClause)''''''
+	def dispatch getVarProperty(DataSignClause dataSignClause)''''''
+	def dispatch getVarProperty(DataSynchronizedClause dataSynchronizedClause)''''''
+	def dispatch getVarProperty(DataJustifiedClause dataJustifiedClause)''''''
+	def dispatch getVarProperty(DataBlankWhenZeroClause dataBlankWhenZeroClause)''''''
+	def dispatch getVarProperty(DataWithLowerBoundsClause dataWithLowerBoundsClause)''''''
+	def dispatch getVarProperty(DataAlignedClause dataAlignedClause)''''''
+	def dispatch getVarProperty(DataRecordAreaClause dataRecordAreaClause)''''''
 }
