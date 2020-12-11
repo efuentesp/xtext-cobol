@@ -1345,12 +1345,11 @@ MergeGiving : FileName ('LOCK' | 'SAVE' | 'NO' 'REWIND' | 'CRUNCH' | 'RELEASE' |
 
 MoveStatement : 'MOVE' 'ALL'? moveTo=(MoveToStatement | MoveCorrespondingToStatement);
 
-MoveToStatement : moveToSendingArea=MoveToSendingArea 'TO' identifier+=ID;
+MoveToStatement : from=Literal 'TO' (to+=Literal)+;
 
-MoveCorrespondingToStatement : ('CORRESPONDING' | 'CORR') 
-	                           moveCorrespondingToSendingArea=MoveCorrespondingToSendingArea 'TO' identifier+=ID;
+MoveCorrespondingToStatement : ('CORRESPONDING' | 'CORR') from=Literal 'TO' (to+=Literal)+;
 	                           
-MoveToSendingArea : literal=Literal;
+//MoveToSendingArea : literal=Literal;
 
 MultiplyStatement
    : 'MULTIPLY' literal=Literal 'BY' 
@@ -1736,7 +1735,7 @@ EXECSQLLINE :EXECCICS query=STRING ; //(cics=EXECCICS| sql=EXECSQL /* | ims=EXEC
 
 // IDs
 
-MoveCorrespondingToSendingArea : id=ID;
+//MoveCorrespondingToSendingArea : id=ID;
 
 AlphabetName : ID;//cobolWord
 

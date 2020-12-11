@@ -17,6 +17,7 @@ import com.softtek.analyzer.cobol.cobol.WriteStatement
 import com.softtek.analyzer.cobol.cobol.DeleteStatement
 import com.softtek.analyzer.cobol.cobol.CallStatement
 import com.softtek.analyzer.cobol.cobol.PerformType
+import com.softtek.analyzer.cobol.cobol.MoveToStatement
 
 class ProcedureDivision {
 	def doGenerate(Resource resource, IFileSystemAccess2 fsa){
@@ -61,12 +62,12 @@ class ProcedureDivision {
 «spaces»DISPLAY «FOR op:st.displayOperand» «op.literal» «ENDFOR»
 	'''
 	
-	def dispatch getStatement(AcceptStatement st,String spaces) '''
-«spaces»ACCEPT «st.id»  «IF st.acceptFromDateStatement!==null» «st.acceptFromDateStatement» «ENDIF»
+	def dispatch getStatement(MoveStatement st,String spaces) '''
+«spaces»MOVE «(st.moveTo as MoveToStatement).from» TO «FOR to:(st.moveTo as MoveToStatement).to» «to» «ENDFOR»
 	'''
 	
-	def dispatch getStatement(MoveStatement st,String spaces) '''
-«spaces»MOVE «st.moveTo»
+	def dispatch getStatement(AcceptStatement st,String spaces) '''
+«spaces»ACCEPT «st.id»  «IF st.acceptFromDateStatement!==null» «st.acceptFromDateStatement» «ENDIF»
 	'''
 	
 	def dispatch getStatement(StopStatement st,String spaces) '''
