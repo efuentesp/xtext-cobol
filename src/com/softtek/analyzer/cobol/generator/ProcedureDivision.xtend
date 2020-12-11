@@ -83,7 +83,10 @@ class ProcedureDivision {
 	'''
 	
 	def dispatch getStatement(ReadStatement st,String spaces) '''
-«spaces»READ «st.fileName»
+«spaces»READ «st.fileName» «IF st.notAtEndPhrase!==null» «getStatement(st.notAtEndPhrase.statement,'  ')» «ENDIF» 
+     «IF st.notInvalidKeyPhrase!==null» 
+     «FOR s: st.notInvalidKeyPhrase.statement» «getStatement(s,'  ')» «ENDFOR»
+     «ENDIF»
 	'''
 	
 	def dispatch getStatement(WriteStatement st,String spaces) '''
