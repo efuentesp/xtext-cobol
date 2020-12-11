@@ -66,27 +66,27 @@ class ProcedureDivision {
 	'''
 	
 	def dispatch getStatement(MoveStatement st,String spaces) '''
-«spaces»MOVE 
+«spaces»MOVE «st.moveTo»
 	'''
 	
 	def dispatch getStatement(StopStatement st,String spaces) '''
-«spaces»STOP
+«spaces»STOP 
 	'''
 	
 	def dispatch getStatement(OpenStatement st,String spaces) '''
-«spaces»OPEN
+«spaces»OPEN 
 	'''
 	
 	def dispatch getStatement(CloseStatement st,String spaces) '''
-«spaces»CLOSE
+«spaces»CLOSE «st.closeFile.fileName»
 	'''
 	
 	def dispatch getStatement(ReadStatement st,String spaces) '''
-«spaces»READ
+«spaces»READ «st.fileName»
 	'''
 	
 	def dispatch getStatement(WriteStatement st,String spaces) '''
-«spaces»WRITE
+«spaces»WRITE «st.recordName»
 	'''
 	
 	def dispatch getStatement(RewriteStatement st,String spaces) '''
@@ -94,11 +94,11 @@ class ProcedureDivision {
 	'''
 	
 	def dispatch getStatement(DeleteStatement st,String spaces) '''
-«spaces»DELETE
+«spaces»DELETE «st.fineName»
 	'''
 	
 	def dispatch getStatement(CallStatement st,String spaces) '''
-«spaces»CALL
+«spaces»CALL «st.literal»
 	'''
 	
 	 
