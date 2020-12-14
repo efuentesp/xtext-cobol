@@ -1805,25 +1805,25 @@ PictureString
    : (pictureChars+=PictureChars pictureCardinality=PictureCardinality?)
    ;
 
-PictureChars
-   : dollarChar='$' 
-   	| literal=Literal 
-   	| slashChar='/' 
-   	| commaChar=',' 
-   	| dotChar='.' 
-   	| colonChar=':' 
-   	| asteriskChar='*' 
-   	| doubleAsteriskChar='**' 
-   	| lParenthesisChar='(' 
-   	| rParenthesisChar= ')' 
-   	| plusChar='+' 
-   	| minusChar='-' 
-   	| lessThanChar='<' 
-   	| moreThanChar='>'
+PictureChars: 
+   char=('$' 
+   	| Literal 
+   	| '/' 
+   	| ',' 
+   	| '.' 
+   	| ':' 
+   	| '*' 
+   	| '**' 
+   	| '(' 
+   	| ')' 
+   	| '+' 
+   	| '-' 
+   	| '<' 
+   	| '>')
    ;
 
 PictureCardinality
-   : '(' int=Literal ')'
+   : '(' cardinality=Literal ')'
    ;
 
 BooleanLiteral : t='TRUE' | f='FALSE';

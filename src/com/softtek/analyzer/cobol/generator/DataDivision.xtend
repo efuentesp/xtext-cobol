@@ -37,6 +37,7 @@ import com.softtek.analyzer.cobol.cobol.DataBlankWhenZeroClause
 import com.softtek.analyzer.cobol.cobol.DataWithLowerBoundsClause
 import com.softtek.analyzer.cobol.cobol.DataAlignedClause
 import com.softtek.analyzer.cobol.cobol.DataRecordAreaClause
+import com.softtek.analyzer.cobol.cobol.PictureString
 
 class DataDivision {
 	
@@ -91,7 +92,7 @@ class DataDivision {
 	def dispatch getVarProperty(DataTypeDefClause dataTypeDefClause)''''''
 	def dispatch getVarProperty(DataThreadLocalClause dataThreadLocalClause)''''''
 	def dispatch getVarProperty(DataPictureClause dataPictureClause)'''
-		«IF dataPictureClause!==null» PIC «dataPictureClause.pictureString» «ENDIF»
+		«IF dataPictureClause!==null» PIC «getPictureString(dataPictureClause.pictureString)» «ENDIF»
 	'''
 	def dispatch getVarProperty(DataCommonOwnLocalClause dataCommonOwnLocalClause)''''''
 	def dispatch getVarProperty(DataTypeClause dataTypeClause)''''''
@@ -107,4 +108,9 @@ class DataDivision {
 	def dispatch getVarProperty(DataWithLowerBoundsClause dataWithLowerBoundsClause)''''''
 	def dispatch getVarProperty(DataAlignedClause dataAlignedClause)''''''
 	def dispatch getVarProperty(DataRecordAreaClause dataRecordAreaClause)''''''
+	
+	def getPictureString(PictureString ps)'''
+	  «FOR c:ps.pictureChars»«c.char»«ENDFOR»«IF ps.pictureCardinality!==null»(«ps.pictureCardinality.cardinality»).«ENDIF»
+	'''
+	
 }
