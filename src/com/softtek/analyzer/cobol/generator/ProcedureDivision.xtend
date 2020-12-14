@@ -22,6 +22,7 @@ import com.softtek.analyzer.cobol.cobol.OpenIOStatement
 import com.softtek.analyzer.cobol.cobol.OpenExtendStatement
 import com.softtek.analyzer.cobol.cobol.OpenOutputStatement
 import com.softtek.analyzer.cobol.cobol.OpenInputStatement
+import com.softtek.analyzer.cobol.cobol.Condition
 
 class ProcedureDivision {
 	def doGenerate(Resource resource, IFileSystemAccess2 fsa){
@@ -48,7 +49,7 @@ class ProcedureDivision {
 	
 	
 	def dispatch getStatement(IfStatement st, String spaces) '''
-«spaces»IF «st.condition.toString()» 
+«spaces»IF «getCondition(st.condition)» 
 	 «IF st.ifThen.statement!==null»
 	   «FOR stm:st.ifThen.statement»
         «spaces» «getStatement(stm,spaces)»
@@ -63,7 +64,7 @@ class ProcedureDivision {
 	'''
 	
 	def dispatch getStatement(DisplayStatement st,String spaces) '''
-«spaces»DISPLAY «FOR op:st.displayOperand» «op.literal» «ENDFOR»
+«spaces»DISPLAY «FOR op:st.displayOperand»«op.literal»«ENDFOR»
 	'''
 	
 	def dispatch getStatement(MoveStatement st,String spaces) '''
@@ -75,7 +76,7 @@ class ProcedureDivision {
 	'''
 	
 	def dispatch getStatement(StopStatement st,String spaces) '''
-«spaces»STOP 
+«spaces»STOP «IF st.run!==null» RUN «ENDIF»  «IF st.literal!==null» «st.literal» «ENDIF»
 	'''
 	
 	def dispatch getStatement(OpenStatement st,String spaces) '''
@@ -141,6 +142,22 @@ class ProcedureDivision {
 	def dispatch openInputOutput(OpenExtendStatement st)'''
 	EXTEND «FOR f:st.fileName» «f» «ENDFOR»
 	'''
+	//Conditions
 	
+	def dispatch getCondition(Condition cond)'''
+	«getLeftOp(cond)» «getOperator(cond)» «getRightOp(cond)»
+	'''
+	
+	def getLeftOp(Condition cond){
+	cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison.arithL.multDivs.powers.basis.literal
+	}
+	
+	def getRightOp(Condition cond){
+	cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison.arithR.multDivs.powers.basis.literal
+	}
+	
+	def getOperator(Condition cond){
+	cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison.relationalOperator
+	}
 	
 }
