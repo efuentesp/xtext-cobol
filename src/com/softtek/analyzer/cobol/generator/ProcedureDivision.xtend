@@ -18,6 +18,10 @@ import com.softtek.analyzer.cobol.cobol.DeleteStatement
 import com.softtek.analyzer.cobol.cobol.CallStatement
 import com.softtek.analyzer.cobol.cobol.PerformType
 import com.softtek.analyzer.cobol.cobol.MoveToStatement
+import com.softtek.analyzer.cobol.cobol.OpenIOStatement
+import com.softtek.analyzer.cobol.cobol.OpenExtendStatement
+import com.softtek.analyzer.cobol.cobol.OpenOutputStatement
+import com.softtek.analyzer.cobol.cobol.OpenInputStatement
 
 class ProcedureDivision {
 	def doGenerate(Resource resource, IFileSystemAccess2 fsa){
@@ -75,7 +79,7 @@ class ProcedureDivision {
 	'''
 	
 	def dispatch getStatement(OpenStatement st,String spaces) '''
-«spaces»OPEN 
+«spaces»OPEN «FOR s:st.openStatement» «openInputOutput(s)» «ENDFOR»
 	'''
 	
 	def dispatch getStatement(CloseStatement st,String spaces) '''
@@ -94,7 +98,7 @@ class ProcedureDivision {
 	'''
 	
 	def dispatch getStatement(RewriteStatement st,String spaces) '''
-«spaces»REWRITE
+«spaces»REWRITE «st.recordName» FROM «st.id»
 	'''
 	
 	def dispatch getStatement(DeleteStatement st,String spaces) '''
@@ -121,4 +125,22 @@ class ProcedureDivision {
 	 «(pt.performTimes.times)» TIMES
 	«ENDIF»
 	'''
+	
+	def dispatch openInputOutput(OpenInputStatement st)'''
+	INPUT «FOR s:st.openInput» «s.fileName» «ENDFOR»
+	'''
+	
+	def dispatch openInputOutput(OpenOutputStatement st)'''
+	OUTPUT «FOR s:st.openOutput» «s.fileName» «ENDFOR»
+	'''
+	
+	def dispatch openInputOutput(OpenIOStatement st)'''
+	I-O «FOR f:st.fileName» «f» «ENDFOR»
+	'''
+	
+	def dispatch openInputOutput(OpenExtendStatement st)'''
+	EXTEND «FOR f:st.fileName» «f» «ENDFOR»
+	'''
+	
+	
 }
