@@ -90,12 +90,21 @@ class ProcedureDivision {
 	def dispatch getStatement(ReadStatement st,String spaces) '''
 «spaces»READ «st.fileName» «IF st.notAtEndPhrase!==null» «getStatement(st.notAtEndPhrase.statement,'  ')» «ENDIF» 
      «IF st.notInvalidKeyPhrase!==null» 
-     «FOR s: st.notInvalidKeyPhrase.statement» «getStatement(s,'  ')» «ENDFOR»
+     «FOR s: st.notInvalidKeyPhrase.statement»NOT INVALID KEY «getStatement(s,'  ')» «ENDFOR»
+     «ENDIF»
+     «IF st.invalidKeyPhrase!==null» 
+     «FOR s: st.invalidKeyPhrase.statement»INVALID KEY «getStatement(s,'  ')» «ENDFOR»
      «ENDIF»
 	'''
 	
 	def dispatch getStatement(WriteStatement st,String spaces) '''
 «spaces»WRITE «st.recordName»
+     «IF st.notInvalidKeyPhrase!==null» 
+     «FOR s: st.notInvalidKeyPhrase.statement»NOT INVALID KEY «getStatement(s,'  ')» «ENDFOR»
+     «ENDIF»
+     «IF st.invalidKeyPhrase!==null» 
+     «FOR s: st.invalidKeyPhrase.statement»INVALID KEY «getStatement(s,'  ')» «ENDFOR»
+     «ENDIF»
 	'''
 	
 	def dispatch getStatement(RewriteStatement st,String spaces) '''
