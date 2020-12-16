@@ -14,3 +14,4 @@ plugin.xml_gen
 GenerateCobol.mwe2
 CobolRuntimeModule.xtend
 CobolStandaloneSetup.xtend
+.launch

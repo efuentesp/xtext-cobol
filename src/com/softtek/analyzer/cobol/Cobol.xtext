@@ -43,17 +43,17 @@ IdentificationDivisionBody : AuthorParagraph
 
 ProgramIdParagraph : 'PROGRAM-ID' '.' programName=ID ('IS'? ('COMMON' | 'INITIAL' | 'LIBRARY' | 'DEFINITION' | 'RECURSIVE') 'PROGRAM'?)? '.'?;
 
-AuthorParagraph : {AuthorParagraph} 'AUTHOR' '.' (autor=ID) ;
+AuthorParagraph : {AuthorParagraph} 'AUTHOR' '.' (autor+=ID)+ '.'? ;
 
-InstallationParagraph : {InstallationParagraph} 'INSTALLATION' '.' (installation+=ID)?;
+InstallationParagraph : {InstallationParagraph} 'INSTALLATION' '.' (installation+=ID)* '.'?;
 
-DateWrittenParagraph : {DateWrittenParagraph} 'DATE-WRITTEN' '.' (dateWritten+=ID)?;
+DateWrittenParagraph : {DateWrittenParagraph} 'DATE-WRITTEN' '.' (dateWritten+=ID)* '.'?;
 
-DateCompiledParagraph : {DateCompiledParagraph} 'DATE-COMPILED' '.' (dateCompiled+=ID)?;
+DateCompiledParagraph : {DateCompiledParagraph} 'DATE-COMPILED' '.' (dateCompiled+=ID)* '.'?;
 
-SecurityParagraph : {SecurityParagraph} 'SECURITY' '.' (security+=ID)?;
+SecurityParagraph : {SecurityParagraph} 'SECURITY' '.' (security+=ID)* '.'?;
 
-RemarksParagraph : {RemarksParagraph} 'REMARKS' '.' (remarks+=ID)?;
+RemarksParagraph : {RemarksParagraph} 'REMARKS' '.' (remarks+=ID)* '.'?;
 
 
 // --- environment division --------------------------------------------------------------------
@@ -1210,7 +1210,7 @@ EvaluateStatement : 'EVALUATE'
 	                'END-EVALUATE'?
 ;
 
-EvaluateSelect : arith=ArithmeticExpression;
+EvaluateSelect : literal=Literal | arith=ArithmeticExpression;
 
 EvaluateAlsoSelect: 'ALSO' evaluateSelect=EvaluateSelect ;
 
@@ -1843,7 +1843,7 @@ terminal INVALID : 'INVALID';
 terminal KEY : 'KEY';
 terminal EXHIBIT : 'EXHIBIT';
 @Override
-terminal ID: ('0'..'9'|'a'..'z'|'A'..'Z'|'-')+; //| ('a'..'z'|'A'..'Z'|'-') ('a'..'z'|'A'..'Z'|'-'|'0'..'9')*;
+terminal ID: ('0'..'9'|'a'..'z'|'A'..'Z'|'-'|'/'|',')+; //| ('a'..'z'|'A'..'Z'|'-') ('a'..'z'|'A'..'Z'|'-'|'0'..'9')*;
 @Override
 terminal SL_COMMENT : '*' !('\n'|'\r')* ('\r'? '\n')?;
 
