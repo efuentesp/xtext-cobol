@@ -24,6 +24,7 @@ import com.softtek.analyzer.cobol.cobol.OpenOutputStatement
 import com.softtek.analyzer.cobol.cobol.OpenInputStatement
 import com.softtek.analyzer.cobol.cobol.Condition
 import com.softtek.analyzer.cobol.cobol.ComputeStatement
+import com.softtek.analyzer.cobol.cobol.AndOrCondition
 
 class ProcedureDivision {
 	def doGenerate(Resource resource, IFileSystemAccess2 fsa){
@@ -154,13 +155,25 @@ class ProcedureDivision {
 	def dispatch openInputOutput(OpenExtendStatement st)'''
 	EXTEND «FOR f:st.fileName» «f» «ENDFOR»
 	'''
+	
 	//Conditions
 	
 	def dispatch getCondition(Condition cond)'''
-	«IF cond !== null»
-		«getLeftOp(cond)» «getOperator(cond)» «getRightOp(cond)»
-	«ENDIF»
+	«IF cond.combinable !== null»«getLeftOp(cond)» «getOperator(cond)» «getRightOp(cond)»«ENDIF»«IF cond.andOrCondition !== null»«FOR c:cond.andOrCondition» «c.andOr»  «getLeftOpComb(c)» «getOperatorComb(c)» «getRightOpComb(c)» «ENDFOR»«ENDIF»
 	'''
+	
+	def getLeftOpComb(AndOrCondition cond){
+		cond.combinableCondition.simpleCondition.relationCondition.relationArithmeticComparison.arithL.multDivs.powers.basis.literal
+	}
+	
+	def getRightOpComb(AndOrCondition cond){
+		cond.combinableCondition.simpleCondition.relationCondition.relationArithmeticComparison.arithR.multDivs.powers.basis.literal
+	}
+	
+	def getOperatorComb(AndOrCondition cond){
+		cond.combinableCondition.simpleCondition.relationCondition.relationArithmeticComparison.relationalOperator
+	}
+	
 	
 	def getLeftOp(Condition cond){
 		cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison.arithL.multDivs.powers.basis.literal
