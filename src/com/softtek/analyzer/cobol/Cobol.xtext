@@ -778,13 +778,14 @@ RelationCondition :
 ;
 
 ClassCondition
-   : identifier=Identifier 'IS'? 'NOT'? ('NUMERIC' 
+   : identifier=Identifier is='IS'? not='NOT'? 
+   	typeCondition=('NUMERIC' 
    	| 'ALPHABETIC' 
    	| 'ALPHABETIC-LOWER' 
    	| 'ALPHABETIC-UPPER' 
    	| 'DBCS' 
    	| 'KANJI' 
-   	| className=ClassName )
+   	| ClassName )
    ;
    
 RelationalOperator :   ('IS' | 'ARE') ? 
@@ -810,7 +811,7 @@ ConditionNameReference : conditionName=ConditionName
 ArithmeticExpression : multDivs=MultDivs => plusMinus+=PlusMinus*;
 
 
-RelationSignCondition : arithmeticExpression=ArithmeticExpression 'IS'? 'NOT'? ('POSITIVE' | 'NEGATIVE' | 'ZERO');
+RelationSignCondition : arithmeticExpression=ArithmeticExpression is='IS'? not='NOT'? sign=('POSITIVE' | 'NEGATIVE' | 'ZERO');
 
 RelationArithmeticComparison : arithL=ArithmeticExpression relationalOperator=RelationalOperator arithR=ArithmeticExpression;
 
@@ -849,7 +850,7 @@ TableCall :
    
 FunctionCall :
   //: 'FUNCTION' FunctionName ('(' arg1=Argument (','? args=Argument)* ')')* referenceModifier=ReferenceModifier?
-     'FUNCTION'	functionName=FunctionName '(' args+=Argument (',' args+=Argument)* ')' referenceModifier=ReferenceModifier?
+     'FUNCTION'	functionName=FunctionName =>('(' args+=Argument (',' args+=Argument)* ')')* //referenceModifier=ReferenceModifier?
    ;
    
 SpecialRegister
@@ -1146,7 +1147,7 @@ ComputeStatement
 
 ComputeStore : id=ID 'ROUNDED'?;
 
-ContinueStatement: 'CONTINUE';
+ContinueStatement: continue='CONTINUE';
 
 DeleteStatement: 'DELETE' fineName=FileName 'RECORD'? 
 	               invalidKeyPhrase=InvalidKeyPhrase? 
@@ -1236,11 +1237,11 @@ ExhibitStatement: exhibit=EXHIBIT 'NAMED'? 'CHANGED'? exhibitOperand+=ExhibitOpe
 
 ExhibitOperand: literal=Literal;
 
-ExitStatement: 'EXIT' 'PROGRAM'?;
+ExitStatement: exit='EXIT' program='PROGRAM'?;
 
 GenerateStatement: 'GENERATE' reportName=ReportName;
 
-GobackStatement: 'GOBACK';
+GobackStatement: goback='GOBACK';
 
 GoToStatement : 'GO' 'TO'? (goStatement=GoToStatementSimple | goDepending=GoToDependingOnStatement);
 
@@ -1345,7 +1346,7 @@ MergeGiving : FileName ('LOCK' | 'SAVE' | 'NO' 'REWIND' | 'CRUNCH' | 'RELEASE' |
 
 MoveStatement : 'MOVE' 'ALL'? moveTo=(MoveToStatement | MoveCorrespondingToStatement);
 
-MoveToStatement : from=Literal 'TO' (to+=Literal)+;
+MoveToStatement : fromIdentifier=Identifier | from=Literal 'TO' (to+=Literal)+;
 
 MoveCorrespondingToStatement : ('CORRESPONDING' | 'CORR') from=Literal 'TO' (to+=Literal)+;
 	                           
@@ -1796,8 +1797,10 @@ TextName : ID; // cobolWord
 
 QualifiedDataName:ID;
 
-Literal : ID | STRING
+Literal :  ID '(' ID ')' | ID | STRING
 ;
+
+
 
 // PictureString:STRING;
 

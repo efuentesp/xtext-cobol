@@ -65,7 +65,6 @@ class DataDivision {
 	def dispatch getSection(WorkingStorageSection wStorageSection)'''
 		«IF wStorageSection.dataDescriptionEntry !== null»
 			«FOR vars: wStorageSection.dataDescriptionEntry»
-			    
 				«vars.level» «vars.dataName» «FOR formatType : vars.data»«getVarProperty(formatType.data)»«ENDFOR»
 			«ENDFOR»
 		«ENDIF»
