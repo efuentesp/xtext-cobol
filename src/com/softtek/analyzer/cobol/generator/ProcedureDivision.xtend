@@ -226,16 +226,16 @@ class ProcedureDivision {
 	//Conditions
 	
 	def dispatch getCondition(Condition cond, IfThen IfThen)'''
-	«getCombinableCondition(cond)»«getAndOrCondition(cond)»«IF IfThen.then !== null»THEN«ENDIF»
+	«getCombinableCondition(cond,IfThen)»
 	'''
 	
-	def getCombinableCondition(Condition cond)'''
-	  «IF cond.combinable.simpleCondition.relationCondition !== null»«getLeftOp(cond)» «getOperator(cond)» «getRightOp(cond)»«ENDIF»
-	  «IF cond.combinable.simpleCondition.classCondition !== null»«getLeftOpClass(cond)» «getOperatorClass(cond)» «getRightOpClass(cond)»«ENDIF»
+	def getCombinableCondition(Condition cond, IfThen IfThen)'''
+	  «IF cond.combinable.simpleCondition.relationCondition !== null»«getLeftOp(cond)» «getOperator(cond)» «getRightOp(cond)» «IF IfThen.then !== null»THEN«ENDIF»«ENDIF»
+	  «IF cond.combinable.simpleCondition.classCondition !== null»«getLeftOpClass(cond)» «getOperatorClass(cond)» «getRightOpClass(cond)» «IF IfThen.then !== null»THEN«ENDIF»«ENDIF»
 	'''
 	
-	def getAndOrCondition(Condition cond)'''
-	  «IF cond.andOrCondition !== null»«FOR c:cond.andOrCondition» «c.andOr»  «getLeftOpComb(c)» «getOperatorComb(c)» «getRightOpComb(c)» «ENDFOR»«ENDIF»
+	def getAndOrCondition(Condition cond, IfThen IfThen)'''
+	  «IF cond.andOrCondition !== null»«FOR c:cond.andOrCondition» «c.andOr»  «getLeftOpComb(c)» «getOperatorComb(c)» «getRightOpComb(c)» «ENDFOR» «IF IfThen.then !== null»THEN«ENDIF»«ENDIF»
 	'''
 		
 	
