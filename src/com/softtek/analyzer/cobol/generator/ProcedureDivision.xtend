@@ -59,6 +59,8 @@ import com.softtek.analyzer.cobol.cobol.SubtractStatement
 import com.softtek.analyzer.cobol.cobol.TerminateStatement
 import com.softtek.analyzer.cobol.cobol.UnstringStatement
 import com.softtek.analyzer.cobol.cobol.IfThen
+import com.softtek.analyzer.cobol.cobol.RelationCondition
+import com.softtek.analyzer.cobol.cobol.ClassCondition
 
 class ProcedureDivision {
 	def doGenerate(Resource resource, IFileSystemAccess2 fsa){
@@ -85,7 +87,7 @@ class ProcedureDivision {
 	
 	
 	def dispatch getStatement(IfStatement st, String spaces) '''
-«spaces»IF «getCondition(st.condition, st.ifThen)»
+«spaces»IF «getCondition(st.condition)» «IF st.ifThen.then !== null»THEN«ENDIF»
 	 «IF st.ifThen.statement!==null»
 	  «FOR stm:st.ifThen.statement»
         «spaces» «getStatement(stm,spaces)»
@@ -225,26 +227,48 @@ class ProcedureDivision {
 	
 	//Conditions
 	
-	def dispatch getCondition(Condition cond, IfThen IfThen)'''
-	«getCombinableCondition(cond,IfThen)»
+	def dispatch getCondition(Condition cond)'''
+	«getCombinableCondition(cond)»«getAndOrCondition(cond)»
 	'''
 	
-	def getCombinableCondition(Condition cond, IfThen IfThen)'''
-	  «IF cond.combinable.simpleCondition.relationCondition !== null»«getLeftOp(cond)» «getOperator(cond)» «getRightOp(cond)» «IF IfThen.then !== null»THEN«ENDIF»«ENDIF»
-	  «IF cond.combinable.simpleCondition.classCondition !== null»«getLeftOpClass(cond)» «getOperatorClass(cond)» «getRightOpClass(cond)» «IF IfThen.then !== null»THEN«ENDIF»«ENDIF»
+	def getCombinableCondition(Condition cond)'''
+	  «IF cond.combinable.simpleCondition.relationCondition !== null»«getLeftOp(cond.combinable.simpleCondition.relationCondition)» «getOperator(cond.combinable.simpleCondition.relationCondition)» «getRightOp(cond.combinable.simpleCondition.relationCondition)»«ENDIF»
+	  «IF cond.combinable.simpleCondition.classCondition !== null»«getLeftOpClass(cond.combinable.simpleCondition.classCondition)» «getOperatorClass(cond)» «getRightOpClass(cond.combinable.simpleCondition.classCondition)»«ENDIF»
 	'''
 	
-	def getAndOrCondition(Condition cond, IfThen IfThen)'''
-	  «IF cond.andOrCondition !== null»«FOR c:cond.andOrCondition» «c.andOr»  «getLeftOpComb(c)» «getOperatorComb(c)» «getRightOpComb(c)» «ENDFOR» «IF IfThen.then !== null»THEN«ENDIF»«ENDIF»
+	def getAndOrCondition(Condition cond)'''
+«««	  «IF cond.andOrCondition !== null»«FOR c : cond.andOrCondition» «c.andOr»  «getLeftOpComb(c)» «getOperatorComb(c)» «getRightOpComb(c)» «ENDFOR» «IF IfThen.then !== null»THEN«ENDIF»«ENDIF»
+	  «IF cond.andOrCondition !== null»«FOR c : cond.andOrCondition» «c.andOr» «getLeftOpComb(c)» «getRightOpComb(c)»«ENDFOR»«ENDIF»
 	'''
 		
 	
 	def getLeftOpComb(AndOrCondition cond){
-		cond.combinableCondition.simpleCondition.relationCondition.relationArithmeticComparison.arithL.multDivs.powers.basis.literal
+		if (cond.combinableCondition.simpleCondition.relationCondition !== null)
+			getLeftOp(cond.combinableCondition.simpleCondition.relationCondition)
+		
+		if (cond.combinableCondition.simpleCondition.classCondition !== null)
+			getLeftOpClass(cond.combinableCondition.simpleCondition.classCondition)
+			
+		
+		if (cond.combinableCondition.simpleCondition.condition !== null){
+			var condition = cond.combinableCondition.simpleCondition.condition
+			'(' + getCondition(condition) + ')'
+		}
 	}
 	
 	def getRightOpComb(AndOrCondition cond){
-		cond.combinableCondition.simpleCondition.relationCondition.relationArithmeticComparison.arithR.multDivs.powers.basis.literal
+		if (cond.combinableCondition.simpleCondition.relationCondition !== null){
+//			getOperator(cond.combinableCondition.simpleCondition.relationCondition)
+			getRightOp(cond.combinableCondition.simpleCondition.relationCondition)
+		}
+		
+		if (cond.combinableCondition.simpleCondition.classCondition !== null)
+			getRightOpClass(cond.combinableCondition.simpleCondition.classCondition)
+		
+		if (cond.combinableCondition.simpleCondition.condition !== null){
+			var condition = cond.combinableCondition.simpleCondition.condition
+			'(' + getCondition(condition) + ')'
+		}
 	}
 	
 	def getOperatorComb(AndOrCondition cond){
@@ -252,74 +276,67 @@ class ProcedureDivision {
 	}
 	
 	
-	def getLeftOp(Condition cond){
-//		print(cond.combinable.simpleCondition.relationCondition.relationSignCondition.arithmeticExpression)
-		
-		if(cond.combinable.simpleCondition.relationCondition.relationSignCondition !== null){
-			return cond.combinable.simpleCondition.relationCondition.relationSignCondition.arithmeticExpression.multDivs.powers.basis.literal
+	def getLeftOp(RelationCondition cond){
+		if(cond.relationSignCondition !== null){
+			return cond.relationSignCondition.arithmeticExpression.multDivs.powers.basis.literal
 		}
 		
-		if(cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison.arithL.multDivs.powers.basis.literal !== null){
-			return cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison.arithL.multDivs.powers.basis.literal
-		}
-		
-//		if(cond.combinable.simpleCondition.relationCondition.relationSignCondition !== null){
-//			cond.combinable.simpleCondition.relationCondition.relationSignCondition//.arithmeticExpression.multDivs.powers.basis.literal
-//		}
-		
-		
-	}
-	
-	def getRightOp(Condition cond){
-		
-		if(cond.combinable.simpleCondition.relationCondition.relationSignCondition !== null){
-			if (cond.combinable.simpleCondition.relationCondition.relationSignCondition.sign !== null)
-				return cond.combinable.simpleCondition.relationCondition.relationSignCondition.sign
-		}
-		
-		if (cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison !== null){
-			if(cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison.arithR.multDivs.powers.basis.literal !== null)
-				return cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison.arithR.multDivs.powers.basis.literal
+		if(cond.relationArithmeticComparison.arithL.multDivs.powers.basis.literal !== null){
+			return cond.relationArithmeticComparison.arithL.multDivs.powers.basis.literal
 		}
 	}
 	
-	def getOperator(Condition cond){
+	def getRightOp(RelationCondition cond){
+		if(cond.relationSignCondition !== null){
+			if (cond.relationSignCondition.sign !== null)
+				return cond.relationSignCondition.sign
+		}
+		
+		if (cond.relationArithmeticComparison !== null){
+			print(cond.relationArithmeticComparison.arithR.multDivs.powers)
+			
+			if(cond.relationArithmeticComparison.arithR.multDivs.powers.basis.literal !== null)
+				return cond.relationArithmeticComparison.arithR.multDivs.powers.basis.literal
+		}
+	}
+	
+	def getOperator(RelationCondition cond){
 		var op=''
 		
-		if (cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison !== null){
-			if (cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison.relationalOperator !== null)
-				return cond.combinable.simpleCondition.relationCondition.relationArithmeticComparison.relationalOperator
+		if (cond.relationArithmeticComparison !== null){
+			if (cond.relationArithmeticComparison.relationalOperator !== null)
+				return cond.relationArithmeticComparison.relationalOperator
 		}
 		
-		if(cond.combinable.simpleCondition.relationCondition.relationSignCondition !== null){
-			if (cond.combinable.simpleCondition.relationCondition.relationSignCondition.is !== null)
-				op=cond.combinable.simpleCondition.relationCondition.relationSignCondition.is
-			if (cond.combinable.simpleCondition.relationCondition.relationSignCondition.not !== null)
-				op=op+cond.combinable.simpleCondition.relationCondition.relationSignCondition.not
+		if(cond.relationSignCondition !== null){
+			if (cond.relationSignCondition.is !== null)
+				op=cond.relationSignCondition.is
+			if (cond.relationSignCondition.not !== null)
+				op=op+cond.relationSignCondition.not
 		}
 		return op
 
 		
 	}
 	
-	def getLeftOpClass(Condition cond){
-		if (cond.combinable.simpleCondition.classCondition.identifier.qualifiedDataName !== null){
-			return cond.combinable.simpleCondition.classCondition.identifier.qualifiedDataName
+	def getLeftOpClass(ClassCondition cond){
+		if (cond.identifier.qualifiedDataName !== null){
+			return cond.identifier.qualifiedDataName
 			
 		}
-		if (cond.combinable.simpleCondition.classCondition.identifier.specialRegister !== null){
-			return cond.combinable.simpleCondition.classCondition.identifier.specialRegister
+		if (cond.identifier.specialRegister !== null){
+			return cond.identifier.specialRegister
 		}
-		if(cond.combinable.simpleCondition.classCondition.identifier.tableCall !== null){
-			return cond.combinable.simpleCondition.classCondition.identifier.tableCall
+		if(cond.identifier.tableCall !== null){
+			return cond.identifier.tableCall
 		}
-		if(cond.combinable.simpleCondition.classCondition.identifier.functionCall !== null){
-			return cond.combinable.simpleCondition.classCondition.identifier.functionCall
+		if(cond.identifier.functionCall !== null){
+			return cond.identifier.functionCall
 		}
 	}
 	
-	def getRightOpClass(Condition cond){
-	    cond.combinable.simpleCondition.classCondition.typeCondition
+	def getRightOpClass(ClassCondition cond){
+	    cond.typeCondition
 	}
 	
 	
