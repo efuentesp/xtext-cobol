@@ -176,7 +176,11 @@ class ProcedureDivision {
 	def dispatch getStatement(DivideStatement st,String spaces) ''''''
 	def dispatch getStatement(EnableStatement st,String spaces) ''''''
 	def dispatch getStatement(EntryStatement st,String spaces) ''''''
-	def dispatch getStatement(EvaluateStatement st,String spaces) ''''''
+	
+	def dispatch getStatement(EvaluateStatement st,String spaces) '''
+«spaces»EVALUATE «IF st.evaluateSelect.literal!==null»«st.evaluateSelect.literal»«ENDIF» «FOR w:st.evaluateWhenPhrase BEFORE ' '  SEPARATOR '\n'»WHEN «w.evaluateWhen.evaluateCondition.evaluateValue.arith.multDivs.powers.basis.literal» «ENDFOR»
+	'''
+	
 	def dispatch getStatement(ExhibitStatement st,String spaces) ''''''
 	def dispatch getStatement(ExecCicsStatement st,String spaces) ''''''
 	def dispatch getStatement(ExitStatement st,String spaces) ''''''

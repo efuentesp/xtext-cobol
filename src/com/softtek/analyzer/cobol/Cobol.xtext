@@ -1222,9 +1222,10 @@ EvaluateWhen : 'WHEN' evaluateCondition=EvaluateCondition =>(evaluateAlsoConditi
 EvaluateWhenOther : 'WHEN' 'OTHER' =>(statement=Statement)*;
 
 EvaluateCondition :  any='ANY' 
+	                 | bool=BooleanLiteral
 	                 | 'NOT'?  evaluateValue=EvaluateValue evaluateThrough=EvaluateThrough?
 	                 | => condition=Condition 
-	                 | boolean=BooleanLiteral
+	                 
 ;
 
 EvaluateAlsoCondition : 'ALSO' evaluateCondition=EvaluateCondition;
@@ -1797,7 +1798,7 @@ TextName : ID; // cobolWord
 
 QualifiedDataName:ID;
 
-Literal :  ID '(' ID ')' | ID | STRING
+Literal :  'TRUE' | 'FALSE'| ID '(' ID ')' | ID | STRING
 ;
 
 
