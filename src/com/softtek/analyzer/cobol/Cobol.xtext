@@ -1206,7 +1206,7 @@ EntryStatement : 'ENTRY' entry=Literal ('USING' identifier+=ID)?;
 EvaluateStatement : 'EVALUATE' 
 	                  evaluateSelect=EvaluateSelect 
 	                  (evaluateAlsoSelect=EvaluateAlsoSelect)? 
-	                  evaluateWhenPhrase+=EvaluateWhenPhrase 
+	                  evaluateWhenPhrase+=EvaluateWhenPhrase (','? evaluateWhenPhrase+=EvaluateWhenPhrase)*
 	                  evaluateWhenOther=EvaluateWhenOther?
 	                'END-EVALUATE'?
 ;
@@ -1215,11 +1215,11 @@ EvaluateSelect : literal=Literal | arith=ArithmeticExpression;
 
 EvaluateAlsoSelect: 'ALSO' evaluateSelect=EvaluateSelect ;
 
-EvaluateWhenPhrase: evaluateWhen=EvaluateWhen statement=Statement;
+EvaluateWhenPhrase: evaluateWhen=EvaluateWhen =>(statement+=Statement)*;
 
-EvaluateWhen : 'WHEN' evaluateCondition=EvaluateCondition evaluateAlsoCondition=EvaluateAlsoCondition;
+EvaluateWhen : 'WHEN' evaluateCondition=EvaluateCondition =>(evaluateAlsoCondition+=EvaluateAlsoCondition)*;
 
-EvaluateWhenOther : 'WHEN' 'OTHER' statement=Statement;
+EvaluateWhenOther : 'WHEN' 'OTHER' =>(statement=Statement)*;
 
 EvaluateCondition :  any='ANY' 
 	                 | 'NOT'?  evaluateValue=EvaluateValue evaluateThrough=EvaluateThrough?
@@ -1847,6 +1847,10 @@ terminal KEY : 'KEY';
 terminal EXHIBIT : 'EXHIBIT';
 @Override
 terminal ID: ('0'..'9'|'a'..'z'|'A'..'Z'|'-'|'/'|',')+; //| ('a'..'z'|'A'..'Z'|'-') ('a'..'z'|'A'..'Z'|'-'|'0'..'9')*;
+//terminal LINE_START_COMMENT: '\n' (!'\n')? (!'\n')? (!'\n')? (!'\n')? (!'\n')? (!'\n')?;
 @Override
-terminal SL_COMMENT : '*' !('\n'|'\r')* ('\r'? '\n')?;
+terminal SL_COMMENT :  '*' !('\n'|'\r')* ('\r'? '\n')?;
+//@Override
+//terminal SL_COMMENT :  (!('\n'|'\r'|'*'))? (!('\n'|'\r'|'*'))? (!('\n'|'\r'|'*'))? (!('\n'|'\r'|'*'))? (!('\n'|'\r'|'*'))? (!('\n'|'\r'|'*'))? '*';
+
 
