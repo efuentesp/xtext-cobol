@@ -200,7 +200,9 @@ class ProcedureDivision {
 	def dispatch getStatement(ReturnStatement st, String spaces) ''''''
 	def dispatch getStatement(SearchStatement st, String spaces) ''''''
 	def dispatch getStatement(SendStatement st, String spaces) ''''''
-	def dispatch getStatement(SetStatement st, String spaces) ''''''
+	def dispatch getStatement(SetStatement st, String spaces) '''
+	 SET «FOR s:st.setToStatement»«FOR setto: s.setTo» «setto.id» «ENDFOR» TO «FOR settov: s.setToValue»  «settov.literal» «ENDFOR»«ENDFOR»
+	'''
 	def dispatch getStatement(SortStatement st, String spaces) ''''''
 	def dispatch getStatement(StartStatement st, String spaces) ''''''
 	def dispatch getStatement(StringStatement st, String spaces) ''''''
@@ -210,13 +212,10 @@ class ProcedureDivision {
 	def dispatch getStatement(TerminateStatement st, String spaces) ''''''
 	def dispatch getStatement(UnstringStatement st, String spaces) ''''''
 	/*
-	 * - SubtractStatement [SUBTRACT 1 FROM WS-INDICE-ESCRITURA]
-- SetStatement [SET CUSTOMER-ROW TO 1]
 - AddStatement [ADD 1 TO WKS-NUM-LINEAS]
 - SortStatement [SORT ARCHIVO-TEMPORAL]
 - ReleaseStatement [RELEASE TEMP-R00-EMPLEADO FROM A01-R00-EMPLEADO.]
 - ReturnStatement [RETURN ARCHIVO-TEMPORAL]
-	 
 	 * 
 	 */
 	def performTimes(PerformType pt)'''

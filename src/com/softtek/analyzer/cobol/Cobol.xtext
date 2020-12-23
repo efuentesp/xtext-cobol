@@ -1546,15 +1546,15 @@ SendAdvancingLines : literal=Literal ('LINE' | 'LINES')?;
 
 SendAdvancingMnemonic : mnemonicName=MnemonicName;
 
-SetStatement : 'SET' (setToStatement+=SetToStatement | setUpDownByStatement=SetUpDownByStatement);
+SetStatement : 'SET' ((setToStatement+=SetToStatement)+ | setUpDownByStatement=SetUpDownByStatement);
 
-SetToStatement : setTo+=SetTo 'TO' setToValue+=SetToValue;
+SetToStatement : (setTo+=SetTo)+ 'TO' (setToValue+=SetToValue)+;
 
-SetUpDownByStatement : setTo+=SetTo ('UP' 'BY' | 'DOWN' 'BY') setByValue=SetByValue;
+SetUpDownByStatement : (setTo+=SetTo)+ (up='UP' 'BY' | down='DOWN' 'BY') setByValue=SetByValue;
 
 SetTo: id=ID;
 
-SetToValue : on='ON' | off='OFF' | 'ENTRY'? (literal=Literal);
+SetToValue : on='ON' | off='OFF' | entry='ENTRY'? (literal=Literal);
 
 SetByValue : literal=Literal;
 
