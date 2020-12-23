@@ -61,6 +61,7 @@ import com.softtek.analyzer.cobol.cobol.UnstringStatement
 import com.softtek.analyzer.cobol.cobol.IfThen
 import com.softtek.analyzer.cobol.cobol.RelationCondition
 import com.softtek.analyzer.cobol.cobol.ClassCondition
+import com.softtek.analyzer.cobol.cobol.SubtractFromStatement
 
 class ProcedureDivision {
 	def doGenerate(Resource resource, IFileSystemAccess2 fsa){
@@ -203,10 +204,21 @@ class ProcedureDivision {
 	def dispatch getStatement(SortStatement st, String spaces) ''''''
 	def dispatch getStatement(StartStatement st, String spaces) ''''''
 	def dispatch getStatement(StringStatement st, String spaces) ''''''
-	def dispatch getStatement(SubtractStatement st, String spaces) ''''''
+	def dispatch getStatement(SubtractStatement st, String spaces) '''
+	 SUBTRACT «getSubtrahend(st).toString().replace('\n','').replace('\r','')» FROM «getMinuend(st).toString().replace('\n','').replace('\r','')» 
+	'''
 	def dispatch getStatement(TerminateStatement st, String spaces) ''''''
 	def dispatch getStatement(UnstringStatement st, String spaces) ''''''
-	
+	/*
+	 * - SubtractStatement [SUBTRACT 1 FROM WS-INDICE-ESCRITURA]
+- SetStatement [SET CUSTOMER-ROW TO 1]
+- AddStatement [ADD 1 TO WKS-NUM-LINEAS]
+- SortStatement [SORT ARCHIVO-TEMPORAL]
+- ReleaseStatement [RELEASE TEMP-R00-EMPLEADO FROM A01-R00-EMPLEADO.]
+- ReturnStatement [RETURN ARCHIVO-TEMPORAL]
+	 
+	 * 
+	 */
 	def performTimes(PerformType pt)'''
 	«IF pt.performTimes!==null»
 	 «(pt.performTimes.times)» TIMES
@@ -340,4 +352,11 @@ class ProcedureDivision {
 	  return op 
 	}
 	
+	def getSubtrahend(SubtractStatement st)'''
+		«FOR s:(st.subtract as SubtractFromStatement).subtractSubtrahend» «s.literal» «ENDFOR»
+	'''
+	
+	def getMinuend(SubtractStatement st)'''
+		«FOR s:(st.subtract as SubtractFromStatement).subtractMinuend» «s.id» «ENDFOR»
+	'''
 }

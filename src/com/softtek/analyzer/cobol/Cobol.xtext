@@ -1644,7 +1644,9 @@ SubtractStatement : 'SUBTRACT'
 	                  notOnSizeErrorPhrase=NotOnSizeErrorPhrase? 
 	                'END-SUBTRACT'?;
 
-SubtractFromStatement : subtractSubtrahend=Literal 'FROM' subtractMinuend=ID 'ROUNDED'?;
+SubtractFromStatement : (subtractSubtrahend+=SubtractSubtrahend)+ 'FROM' (subtractMinuend+=SubtractMinuend)+;
+
+
 
 SubtractFromGivingStatement : subtractSubtrahend+=SubtractSubtrahend 
                               'FROM' subtractMinuendGiving=SubtractMinuendGiving 
