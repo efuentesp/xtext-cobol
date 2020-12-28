@@ -1441,9 +1441,9 @@ ReadWith : 'WITH'? (('KEPT' | 'NO') 'LOCK' | 'WAIT') ;
 
 ReadKey : key=KEY 'IS'? qualifiedDataName=QualifiedDataName;
 
-AtEndPhrase : 'AT'? 'END' statement=Statement;
+AtEndPhrase : at='AT'? 'END' =>statement+=Statement*;
 
-NotAtEndPhrase : 'NOT' 'AT'? 'END' statement=Statement;
+NotAtEndPhrase : not='NOT' at='AT'? 'END' =>statement+=Statement*;
 
 ReceiveStatement :
         'RECEIVE' (ReceiveFromStatement | ReceiveIntoStatement) 
@@ -1486,7 +1486,7 @@ ReceiveWithData : 'WITH' 'DATA' =>statement+=Statement*;
 ReleaseStatement : 'RELEASE' recordName=RecordName ('FROM' from=QualifiedDataName)?;
 
 ReturnStatement : 'RETURN'
-	                  fileName=FileName 'RECORD'? 
+	                  fileName=FileName record='RECORD'? 
 	                  returnInto=ReturnInto? 
 	                  atEndPhrase=AtEndPhrase 
 	                  notAtEndPhrase=NotAtEndPhrase? 

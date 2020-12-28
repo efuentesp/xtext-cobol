@@ -129,7 +129,7 @@ class ProcedureDivision {
 	'''
 	
 	def dispatch getStatement(ReadStatement st,String spaces) '''
-«spaces»READ «st.fileName» «IF st.notAtEndPhrase!==null» «getStatement(st.notAtEndPhrase.statement,'  ')» «ENDIF» 
+«spaces»READ «st.fileName» «IF st.notAtEndPhrase!==null» «FOR s:st.notAtEndPhrase.statement» «getStatement(s,'  ')»«ENDFOR»«ENDIF» 
      «IF st.notInvalidKeyPhrase!==null» 
      «FOR s: st.notInvalidKeyPhrase.statement»NOT INVALID KEY «getStatement(s,'  ')» «ENDFOR»
      «ENDIF»
@@ -201,7 +201,9 @@ class ProcedureDivision {
 	def dispatch getStatement(ReleaseStatement st, String spaces) '''
 	 RELEASE «(st.recordName as QualifiedDataNameFormat1).dataName» «IF st.from !==null» FROM «(st.from as QualifiedDataNameFormat1).dataName» «ENDIF»
 	'''
-	def dispatch getStatement(ReturnStatement st, String spaces) ''''''
+	def dispatch getStatement(ReturnStatement st, String spaces) '''
+	 RETURN «st.fileName» «IF st.record!==null» «st.record» «ENDIF» «IF st.notAtEndPhrase!==null» «FOR s:st.notAtEndPhrase.statement» «getStatement(s,'')»«ENDFOR»«ENDIF» 
+	'''
 	def dispatch getStatement(SearchStatement st, String spaces) ''''''
 	def dispatch getStatement(SendStatement st, String spaces) ''''''
 	def dispatch getStatement(SetStatement st, String spaces) '''
@@ -218,8 +220,6 @@ class ProcedureDivision {
 	/*
 - AddStatement [ADD 1 TO WKS-NUM-LINEAS]
 - SortStatement [SORT ARCHIVO-TEMPORAL]
-- ReturnStatement [RETURN ARCHIVO-TEMPORAL]
-	 * 
 	 */
 	def performTimes(PerformType pt)'''
 	«IF pt.performTimes!==null»
