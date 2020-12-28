@@ -818,7 +818,10 @@ RelationArithmeticComparison : arithL=ArithmeticExpression relationalOperator=Re
 RelationCombinedComparison : arithmeticExpression=ArithmeticExpression relationalOperator=RelationalOperator '(' rel=RelationCombinedCondition ')';
 
 Identifier
-   : qualifiedDataName=QualifiedDataName | tableCall=TableCall | functionCall=FunctionCall | specialRegister=SpecialRegister
+   :  => qualifiedDataName=QualifiedDataName 
+   	| => tableCall=TableCall 
+   	| => functionCall=FunctionCall 
+   	| => specialRegister=SpecialRegister
    ;
    
 ConditionNameSubscriptReference : '(' subss+=Subscript (',' subss+=Subscript)* ')';
@@ -845,7 +848,7 @@ InMnemonic : ('IN' | 'OF') mnemonicName=MnemonicName;
 
 TableCall :
    //: QualifiedDataName ('(' subs=Subscript (','? subss=Subscript)* ')')* referenceModifier=ReferenceModifier?
-    qualifiedDataName=QualifiedDataName '(' subs+=Subscript (',' subs+=Subscript)* ')' referenceModifier=ReferenceModifier?
+    => qualifiedDataName=QualifiedDataName '(' subs+=Subscript (',' subs+=Subscript)* ')' referenceModifier=ReferenceModifier?
    ;
    
 FunctionCall :
@@ -1480,7 +1483,7 @@ ReceiveNoData: 'NO' 'DATA' => statement+=Statement*;
 
 ReceiveWithData : 'WITH' 'DATA' =>statement+=Statement*;
 
-ReleaseStatement : 'RELEASE' recordName=RecordName ('FROM' qualifiedDataName=QualifiedDataName)?;
+ReleaseStatement : 'RELEASE' recordName=RecordName ('FROM' from=QualifiedDataName)?;
 
 ReturnStatement : 'RETURN'
 	                  fileName=FileName 'RECORD'? 
@@ -1798,7 +1801,38 @@ SymbolicCharacter : ID; //cobolWord
 TextName : ID; // cobolWord
 
 
-QualifiedDataName:ID;
+//QualifiedDataName:ID;
+
+
+QualifiedDataName
+   : QualifiedDataNameFormat1 
+     | QualifiedDataNameFormat2 
+     //| QualifiedDataNameFormat3 
+     | QualifiedDataNameFormat4
+   ;
+
+QualifiedDataNameFormat1: dataName=(DataName) // | ConditionName) 
+	 ((qualifiedInData+=ID)+ infile=InFile? | infile=InFile)?
+;
+
+QualifiedDataNameFormat2 : paragraphName=ParagraphName insection=InSection;
+
+//QualifiedDataNameFormat3 : textName=ID inlibrary=ID;
+
+QualifiedDataNameFormat4: 'LINAGE-COUNTER' infile=InFile;
+
+QualifiedInData: InData; //| InTable;
+
+// in ----------------------------------
+
+
+InSection: ('IN' | 'OF') id=SectionName;
+
+InLibrary: ('IN' | 'OF') id=LibraryName;
+
+InTable: ('IN' | 'OF') => id=TableCall;
+
+
 
 Literal :  'TRUE' | 'FALSE'| ID '(' ID ')' | ID | STRING
 ;

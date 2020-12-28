@@ -62,6 +62,8 @@ import com.softtek.analyzer.cobol.cobol.IfThen
 import com.softtek.analyzer.cobol.cobol.RelationCondition
 import com.softtek.analyzer.cobol.cobol.ClassCondition
 import com.softtek.analyzer.cobol.cobol.SubtractFromStatement
+import com.softtek.analyzer.cobol.cobol.QualifiedDataName
+import com.softtek.analyzer.cobol.cobol.QualifiedDataNameFormat1
 
 class ProcedureDivision {
 	def doGenerate(Resource resource, IFileSystemAccess2 fsa){
@@ -196,7 +198,9 @@ class ProcedureDivision {
 	def dispatch getStatement(MultiplyStatement st, String spaces) ''''''
 	def dispatch getStatement(PurgeStatement st, String spaces) ''''''
 	def dispatch getStatement(ReceiveStatement st, String spaces) ''''''
-	def dispatch getStatement(ReleaseStatement st, String spaces) ''''''
+	def dispatch getStatement(ReleaseStatement st, String spaces) '''
+	 RELEASE «(st.recordName as QualifiedDataNameFormat1).dataName» «IF st.from !==null» FROM «(st.from as QualifiedDataNameFormat1).dataName» «ENDIF»
+	'''
 	def dispatch getStatement(ReturnStatement st, String spaces) ''''''
 	def dispatch getStatement(SearchStatement st, String spaces) ''''''
 	def dispatch getStatement(SendStatement st, String spaces) ''''''
@@ -214,7 +218,6 @@ class ProcedureDivision {
 	/*
 - AddStatement [ADD 1 TO WKS-NUM-LINEAS]
 - SortStatement [SORT ARCHIVO-TEMPORAL]
-- ReleaseStatement [RELEASE TEMP-R00-EMPLEADO FROM A01-R00-EMPLEADO.]
 - ReturnStatement [RETURN ARCHIVO-TEMPORAL]
 	 * 
 	 */
