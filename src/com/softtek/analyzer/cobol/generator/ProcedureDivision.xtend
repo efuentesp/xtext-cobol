@@ -171,7 +171,9 @@ class ProcedureDivision {
 	  
 	'''
 	
-	def dispatch getStatement(AddStatement st,String spaces) ''''''
+	def dispatch getStatement(AddStatement st,String spaces) '''
+	ADD «FOR s:st.add.addFrom» «s.literal» «ENDFOR»TO«FOR s:st.add.addTo» «s.id» «ENDFOR»
+	'''
 	def dispatch getStatement(AlterStatement st,String spaces) ''''''
 	def dispatch getStatement(CancelStatement st,String spaces) ''''''
 	def dispatch getStatement(ContinueStatement st,String spaces) ''''''
@@ -218,7 +220,6 @@ class ProcedureDivision {
 	def dispatch getStatement(TerminateStatement st, String spaces) ''''''
 	def dispatch getStatement(UnstringStatement st, String spaces) ''''''
 	/*
-- AddStatement [ADD 1 TO WKS-NUM-LINEAS]
 - SortStatement [SORT ARCHIVO-TEMPORAL]
 	 */
 	def performTimes(PerformType pt)'''

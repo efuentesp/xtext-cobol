@@ -1045,7 +1045,7 @@ NotOnExceptionClause : not='NOT'? on='ON'? 'EXCEPTION' => (statement+=Statement)
 
 AddStatement
    : 'ADD' (
-   		add=AddToStatement 
+   		  add=AddToStatement 
    		| addGiving=AddToGivingStatement 
    		| addCorresponding=AddCorrespondingStatement
       ) 
@@ -1054,19 +1054,19 @@ AddStatement
   	  'END-ADD'?
    ;
 
-AddToStatement : AddFrom=AddFrom 'TO' addTo=AddTo;
+AddToStatement : (AddFrom+=AddFrom)+ 'TO' (addTo+=AddTo)+;
 
-AddToGivingStatement : addFrom=AddFrom ('TO' addToGiving=AddToGiving)? 'GIVING' addGiving=AddGiving;
+AddToGivingStatement : (addFrom+=AddFrom)+ ('TO' (addToGiving+=AddToGiving)+)? 'GIVING' (addGiving+=AddGiving)+;
 
 AddCorrespondingStatement
-   : ('CORRESPONDING' | 'CORR') corr=ID 'TO' to=AddTo
+   : corresponding=('CORRESPONDING' | 'CORR') corr=ID 'TO' to=AddTo
    ;
    
 AddFrom : literal=Literal;
 
-AddTo: ID 'ROUNDED'?;
+AddTo: id=ID rounded='ROUNDED'?;
 
-OnSizeErrorPhrase : 'ON'? 'SIZE' 'ERROR' => (statement+=Statement)*;
+OnSizeErrorPhrase : on='ON'? 'SIZE' 'ERROR' => (statement+=Statement)*;
 
 NotOnSizeErrorPhrase : not='NOT'? on='ON'? 'SIZE' 'ERROR' => (statement+=Statement)*;
 
