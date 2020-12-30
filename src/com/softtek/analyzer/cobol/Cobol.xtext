@@ -1563,40 +1563,43 @@ SetByValue : literal=Literal;
 
 
 SortStatement
-   : 'SORT' FileName sortOnKeyClause+=SortOnKeyClause+ sortDuplicatesPhrase=SortDuplicatesPhrase? 
+   : 'SORT' filename=FileName 
+   	 (sortOnKeyClause+=SortOnKeyClause)+ 
+   	 sortDuplicatesPhrase=SortDuplicatesPhrase? 
    	 sortCollatingSequencePhrase=SortCollatingSequencePhrase? 
    	 sortInputProcedurePhrase=SortInputProcedurePhrase? 
-   	 sortUsing+=SortUsing* sortOutputProcedurePhrase=SortOutputProcedurePhrase? 
+   	 sortUsing+=SortUsing* 
+   	 sortOutputProcedurePhrase=SortOutputProcedurePhrase? 
    	 sortGivingPhrase+=SortGivingPhrase*
 ;
 
-SortOnKeyClause : 'ON'? ('ASCENDING' | 'DESCENDING') key=KEY? qualifiedDataName+=QualifiedDataName+;
+SortOnKeyClause : on='ON'? asc=('ASCENDING' | 'DESCENDING') key=KEY? (qualifiedDataName+=QualifiedDataName)+;
 
-SortDuplicatesPhrase : 'WITH'? 'DUPLICATES' 'IN'? 'ORDER'?;
+SortDuplicatesPhrase : withDuplicates='WITH'? 'DUPLICATES' in='IN'? order='ORDER'?;
 
-SortCollatingSequencePhrase : 'COLLATING'? 'SEQUENCE' 'IS'? 
-	                  alphabetName+=AlphabetName+ 
+SortCollatingSequencePhrase : collating='COLLATING'? 'SEQUENCE' is='IS'? 
+	                  (alphabetName+=AlphabetName)+ 
 	                  sortCollatingAlphanumeric=SortCollatingAlphanumeric? 
 	                  sortCollatingNational=SortCollatingNational?
 ;
 
-SortCollatingAlphanumeric : 'FOR'? 'ALPHANUMERIC' 'IS' alphabetName=AlphabetName;
+SortCollatingAlphanumeric : for='FOR'? 'ALPHANUMERIC' 'IS' alphabetName=AlphabetName;
 
-SortCollatingNational : 'FOR'? 'NATIONAL' 'IS'? alphabetName=AlphabetName;
+SortCollatingNational : for='FOR'? 'NATIONAL' is='IS'? alphabetName=AlphabetName;
 
-SortInputProcedurePhrase : 'INPUT' 'PROCEDURE' 'IS'? procedureName=ProcedureName sortInputThrough=SortInputThrough?;
+SortInputProcedurePhrase : 'INPUT' 'PROCEDURE' is='IS'? procedureName=ProcedureName sortInputThrough=SortInputThrough?;
 
-SortInputThrough : ('THROUGH' | 'THRU') procedureName=ProcedureName;
+SortInputThrough : thru=('THROUGH' | 'THRU') procedureName=ProcedureName;
 
-SortUsing : 'USING' fileName+=FileName;
+SortUsing : 'USING' (fileName+=FileName)+;
 
-SortOutputProcedurePhrase : 'OUTPUT' 'PROCEDURE' 'IS'? procedureName=ProcedureName sortOutputThrough=SortOutputThrough?;
+SortOutputProcedurePhrase : 'OUTPUT' 'PROCEDURE' is='IS'? procedureName=ProcedureName sortOutputThrough=SortOutputThrough?;
 
-SortOutputThrough : ('THROUGH' | 'THRU') procedureName=ProcedureName;
+SortOutputThrough : thru=('THROUGH' | 'THRU') procedureName=ProcedureName;
 
-SortGivingPhrase : 'GIVING' sortGiving+=SortGiving;
+SortGivingPhrase : 'GIVING' (sortGiving+=SortGiving)+;
 
-SortGiving : fileName=FileName ('LOCK' | 'SAVE' | 'NO' 'REWIND' | 'CRUNCH' | 'RELEASE' | 'WITH' 'REMOVE' 'CRUNCH')?;
+SortGiving : fileName=FileName (lock='LOCK' | save='SAVE' | norewind='NO' 'REWIND' | crunch='CRUNCH' | release='RELEASE' | withremove='WITH' 'REMOVE' 'CRUNCH')?;
 
 StartStatement : 'START' filenName= FileName 
 	                     startKey=StartKey? 

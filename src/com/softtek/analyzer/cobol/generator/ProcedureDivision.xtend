@@ -211,7 +211,9 @@ class ProcedureDivision {
 	def dispatch getStatement(SetStatement st, String spaces) '''
 	 SET «FOR s:st.setToStatement»«FOR setto: s.setTo» «setto.id» «ENDFOR» TO «FOR settov: s.setToValue»  «settov.literal» «ENDFOR»«ENDFOR»
 	'''
-	def dispatch getStatement(SortStatement st, String spaces) ''''''
+	def dispatch getStatement(SortStatement st, String spaces) '''
+	SORT «st.filename» «FOR c:st.sortOnKeyClause» «c.asc» «ENDFOR»
+	'''
 	def dispatch getStatement(StartStatement st, String spaces) ''''''
 	def dispatch getStatement(StringStatement st, String spaces) ''''''
 	def dispatch getStatement(SubtractStatement st, String spaces) '''
@@ -219,9 +221,7 @@ class ProcedureDivision {
 	'''
 	def dispatch getStatement(TerminateStatement st, String spaces) ''''''
 	def dispatch getStatement(UnstringStatement st, String spaces) ''''''
-	/*
-- SortStatement [SORT ARCHIVO-TEMPORAL]
-	 */
+	
 	def performTimes(PerformType pt)'''
 	«IF pt.performTimes!==null»
 	 «(pt.performTimes.times)» TIMES
