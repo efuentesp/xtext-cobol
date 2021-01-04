@@ -1141,14 +1141,14 @@ ClosePortFileIOUsingAssociatedData : 'ASSOCIATED-DATA' int=Literal;
 ClosePortFileIOUsingAssociatedDataLength : 'ASSOCIATED-DATA-LENGTH' 'OF'? int=Literal;
 
 ComputeStatement
-   : 'COMPUTE' computeStore+=ComputeStore ('=' | 'EQUAL') 
+   : 'COMPUTE' (computeStore+=ComputeStore)+ ('=' | 'EQUAL') 
    	  arithmeticExpression=ArithmeticExpression 
    	  onSizeErrorPhrase=OnSizeErrorPhrase?
    	  notOnSizeErrorPhrase=NotOnSizeErrorPhrase? 
    	  'END-COMPUTE'?
    ;
 
-ComputeStore : id=ID 'ROUNDED'?;
+ComputeStore : id=Literal 'ROUNDED'?;
 
 ContinueStatement: continue='CONTINUE';
 

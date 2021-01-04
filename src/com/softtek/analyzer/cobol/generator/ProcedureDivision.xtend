@@ -195,7 +195,9 @@ class ProcedureDivision {
 	def dispatch getStatement(InitializeStatement st,String spaces) ''''''
 	def dispatch getStatement(InitiateStatement st,String spaces) ''''''
 	def dispatch getStatement(InspectStatement st,String spaces) ''''''
-	def dispatch getStatement(ComputeStatement st, String spaces) ''''''
+	def dispatch getStatement(ComputeStatement st, String spaces) '''
+	COMPUTE «FOR c:st.computeStore» «c.id»«ENDFOR» = «st.arithmeticExpression.multDivs.powers.basis.literal»
+	'''
 	def dispatch getStatement(MergeStatement st, String spaces) ''''''
 	def dispatch getStatement(MultiplyStatement st, String spaces) ''''''
 	def dispatch getStatement(PurgeStatement st, String spaces) ''''''
