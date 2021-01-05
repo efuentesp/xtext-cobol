@@ -208,7 +208,9 @@ class ProcedureDivision {
 	def dispatch getStatement(ReturnStatement st, String spaces) '''
 	 RETURN «st.fileName» «IF st.record!==null» «st.record» «ENDIF» «IF st.notAtEndPhrase!==null» «FOR s:st.notAtEndPhrase.statement» «getStatement(s,'')»«ENDFOR»«ENDIF» 
 	'''
-	def dispatch getStatement(SearchStatement st, String spaces) ''''''
+	def dispatch getStatement(SearchStatement st, String spaces) '''
+	SEARCH «(st.qualifiedDataName as QualifiedDataNameFormat1).dataName» «IF st.atEndPhrase!==null» AT END «FOR s:st.atEndPhrase.statement» «getStatement(s,'')»«ENDFOR»«ENDIF» WHEN «FOR s:st.searchWhen» «getCondition(s.condition)» «ENDFOR»
+	'''
 	def dispatch getStatement(SendStatement st, String spaces) ''''''
 	def dispatch getStatement(SetStatement st, String spaces) '''
 	 SET «FOR s:st.setToStatement»«FOR setto: s.setTo» «setto.id» «ENDFOR» TO «FOR settov: s.setToValue»  «settov.literal» «ENDFOR»«ENDFOR»
