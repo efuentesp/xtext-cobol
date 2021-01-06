@@ -1092,9 +1092,9 @@ CallUsingPhrase : 'USING' (callUsingParameter+=CallUsingParameter)+;
 
 CallGivingPhrase : ('GIVING' | 'RETURNING') id=Literal;
 
-OnOverflowPhrase : 'ON'? 'OVERFLOW' => (statement+=Statement)*;
+OnOverflowPhrase : on='ON'? 'OVERFLOW' => (statement+=Statement)*;
 
-NotOnOverflowPhrase : 'NOT' 'ON'? 'OVERFLOW' => (statement+=Statement)*;
+NotOnOverflowPhrase : 'NOT' on='ON'? 'OVERFLOW' => (statement+=Statement)*;
 
 CallUsingParameter : CallByReferencePhrase | CallByValuePhrase | CallByContentPhrase;
 
@@ -1343,7 +1343,6 @@ MergeCollatingAlphanumeric : 'FOR'? 'ALPHANUMERIC' 'IS' alphabetName=AlphabetNam
 MergeCollatingNational: 'FOR'? 'NATIONAL' 'IS'? alphabetName=AlphabetName;
 
 MergeOutputThrough : ('THROUGH' | 'THRU') procedureName=ProcedureName;
-
 MergeGivingPhrase : 'GIVING' mergeGiving+=MergeGiving;
 
 MergeGiving : FileName ('LOCK' | 'SAVE' | 'NO' 'REWIND' | 'CRUNCH' | 'RELEASE' | 'WITH' 'REMOVE' 'CRUNCH')?;
@@ -1885,11 +1884,15 @@ terminal EXECSQLIMS: 'EXECSQLIMS';
 terminal INVALID : 'INVALID';
 terminal KEY : 'KEY';
 terminal EXHIBIT : 'EXHIBIT';
+
 @Override
 terminal ID: ('0'..'9'|'a'..'z'|'A'..'Z'|'-'|'/'|',')+; //| ('a'..'z'|'A'..'Z'|'-') ('a'..'z'|'A'..'Z'|'-'|'0'..'9')*;
 //terminal LINE_START_COMMENT: '\n' (!'\n')? (!'\n')? (!'\n')? (!'\n')? (!'\n')? (!'\n')?;
 @Override
-terminal SL_COMMENT :  '*' !('\n'|'\r')* ('\r'? '\n')?;
+terminal SL_COMMENT : 
+	'*' !('\n'|'\r')* ('\r'? '\n')?
+;
+//terminal SL_COMMENT :  '*' !('\n'|'\r')* ('\r'? '\n')?;
 //@Override
 //terminal SL_COMMENT :  (!('\n'|'\r'|'*'))? (!('\n'|'\r'|'*'))? (!('\n'|'\r'|'*'))? (!('\n'|'\r'|'*'))? (!('\n'|'\r'|'*'))? (!('\n'|'\r'|'*'))? '*';
 

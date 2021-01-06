@@ -64,6 +64,7 @@ import com.softtek.analyzer.cobol.cobol.ClassCondition
 import com.softtek.analyzer.cobol.cobol.SubtractFromStatement
 import com.softtek.analyzer.cobol.cobol.QualifiedDataName
 import com.softtek.analyzer.cobol.cobol.QualifiedDataNameFormat1
+import com.softtek.analyzer.cobol.cobol.StringForPhrase
 
 class ProcedureDivision {
 	def doGenerate(Resource resource, IFileSystemAccess2 fsa){
@@ -206,7 +207,7 @@ class ProcedureDivision {
 	 RELEASE «(st.recordName as QualifiedDataNameFormat1).dataName» «IF st.from !==null» FROM «(st.from as QualifiedDataNameFormat1).dataName» «ENDIF»
 	'''
 	def dispatch getStatement(ReturnStatement st, String spaces) '''
-	 RETURN «st.fileName» «IF st.record!==null» «st.record» «ENDIF» «IF st.notAtEndPhrase!==null» «FOR s:st.notAtEndPhrase.statement» «getStatement(s,'')»«ENDFOR»«ENDIF» 
+	 RETURN «st.fileName» «IF st.record!==null» «st.record» «ENDIF» «IF st.notAtEndPhrase!==null» NOT AT END «FOR s:st.notAtEndPhrase.statement» «getStatement(s,'')»«ENDFOR»«ENDIF» «IF st.atEndPhrase!==null» AT END «FOR s:st.atEndPhrase.statement» «getStatement(s,'')»«ENDFOR»«ENDIF»
 	'''
 	def dispatch getStatement(SearchStatement st, String spaces) '''
 	SEARCH «(st.qualifiedDataName as QualifiedDataNameFormat1).dataName» «IF st.atEndPhrase!==null» AT END «FOR s:st.atEndPhrase.statement» «getStatement(s,'')»«ENDFOR»«ENDIF» WHEN «FOR s:st.searchWhen» «getCondition(s.condition)» «ENDFOR»
@@ -219,7 +220,9 @@ class ProcedureDivision {
 	SORT «st.filename» «FOR c:st.sortOnKeyClause» «c.asc» «ENDFOR»
 	'''
 	def dispatch getStatement(StartStatement st, String spaces) ''''''
-	def dispatch getStatement(StringStatement st, String spaces) ''''''
+	def dispatch getStatement(StringStatement st, String spaces) '''
+	STRING «FOR c:st.stringSendingPhrase»«FOR s:c.stringSending SEPARATOR '\n'» «s.literal» «ENDFOR» «getStringPhrase(c.stringPhrase as StringForPhrase)»«ENDFOR» INTO «st.stringIntoPhra.id» «IF st.onOverflowPhrase !== null» «IF st.onOverflowPhrase.on !== null» ON «ENDIF» OVERFLOW «FOR s : st.onOverflowPhrase.statement» «getStatement(s,'')» «ENDFOR»«ENDIF»«IF st.notOnOverflowPhrase !== null» «IF st.onOverflowPhrase.on !== null» ON «ENDIF» OVERFLOW «FOR s : st.onOverflowPhrase.statement» «getStatement(s,'')» «ENDFOR»«ENDIF»
+	'''
 	def dispatch getStatement(SubtractStatement st, String spaces) '''
 	 SUBTRACT «getSubtrahend(st).toString().replace('\n','').replace('\r','')» FROM «getMinuend(st).toString().replace('\n','').replace('\r','')» 
 	'''
@@ -247,6 +250,13 @@ class ProcedureDivision {
 	def dispatch openInputOutput(OpenExtendStatement st)'''
 	EXTEND «FOR f:st.fileName» «f» «ENDFOR»
 	'''
+	
+	// String Phrase
+	
+	def dispatch getStringPhrase(StringForPhrase sp)'''
+	FOR «sp.literal»
+	'''
+	
 	
 	//Conditions
 	
