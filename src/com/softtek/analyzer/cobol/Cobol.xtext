@@ -1688,13 +1688,13 @@ UnstringSendingPhrase : id=ID (
 	                          unstringOrAllPhrase+=UnstringOrAllPhrase*
 	                          )?;
 
-UnstringDelimitedByPhrase : 'DELIMITED' 'BY'? 'ALL'? literal=Literal;
+UnstringDelimitedByPhrase : 'DELIMITED' by='BY'? all='ALL'? literal=Literal;
 
-UnstringOrAllPhrase : 'OR' 'ALL'? literal=Literal;
+UnstringOrAllPhrase : 'OR' all='ALL'? literal=Literal;
 
-UnstringIntoPhrase : 'INTO' unstringInto+=UnstringInto;
+UnstringIntoPhrase : 'INTO' (unstringInto+=UnstringInto)+;
 
-UnstringInto : id=ID unstringDelimiterIn=UnstringDelimiterIn? unstringCountIn=UnstringCountIn?;
+UnstringInto : id=Literal unstringDelimiterIn=UnstringDelimiterIn? unstringCountIn=UnstringCountIn?;
 
 UnstringDelimiterIn : 'DELIMITER' 'IN'? id=ID;
 

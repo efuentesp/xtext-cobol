@@ -221,13 +221,20 @@ class ProcedureDivision {
 	'''
 	def dispatch getStatement(StartStatement st, String spaces) ''''''
 	def dispatch getStatement(StringStatement st, String spaces) '''
-	STRING «FOR c:st.stringSendingPhrase»«FOR s:c.stringSending SEPARATOR '\n'» «s.literal» «ENDFOR» «getStringPhrase(c.stringPhrase as StringForPhrase)»«ENDFOR» INTO «st.stringIntoPhra.id» «IF st.onOverflowPhrase !== null» «IF st.onOverflowPhrase.on !== null» ON «ENDIF» OVERFLOW «FOR s : st.onOverflowPhrase.statement» «getStatement(s,'')» «ENDFOR»«ENDIF»«IF st.notOnOverflowPhrase !== null» «IF st.onOverflowPhrase.on !== null» ON «ENDIF» OVERFLOW «FOR s : st.onOverflowPhrase.statement» «getStatement(s,'')» «ENDFOR»«ENDIF»
+	STRING «FOR c:st.stringSendingPhrase»«FOR s:c.stringSending SEPARATOR '\n'» «s.literal» «ENDFOR» «getStringPhrase(c.stringPhrase as StringForPhrase)»«ENDFOR» INTO «st.stringIntoPhra.id»
+	«IF st.onOverflowPhrase !== null» «IF st.onOverflowPhrase.on !== null» ON «ENDIF» OVERFLOW «FOR s : st.onOverflowPhrase.statement» «getStatement(s,'')» «ENDFOR»«ENDIF»
+	«IF st.notOnOverflowPhrase !== null»NOT «IF st.notOnOverflowPhrase.on !== null»ON«ENDIF» OVERFLOW «FOR s : st.notOnOverflowPhrase.statement» «getStatement(s,'')» «ENDFOR»«ENDIF»
 	'''
 	def dispatch getStatement(SubtractStatement st, String spaces) '''
-	 SUBTRACT «getSubtrahend(st).toString().replace('\n','').replace('\r','')» FROM «getMinuend(st).toString().replace('\n','').replace('\r','')» 
+	SUBTRACT «getSubtrahend(st).toString().replace('\n','').replace('\r','')» FROM «getMinuend(st).toString().replace('\n','').replace('\r','')» 
 	'''
 	def dispatch getStatement(TerminateStatement st, String spaces) ''''''
-	def dispatch getStatement(UnstringStatement st, String spaces) ''''''
+	
+	def dispatch getStatement(UnstringStatement st, String spaces) '''
+	UNSTRING «st.unstringSendingPhrase.id» «IF st.unstringSendingPhrase.unstringDelimitedByPhrase !== null»DELIMITED«IF st.unstringSendingPhrase.unstringDelimitedByPhrase.by !== null» BY «ENDIF»«IF st.unstringSendingPhrase.unstringDelimitedByPhrase.all !== null» ALL «ENDIF»«st.unstringSendingPhrase.unstringDelimitedByPhrase.literal»«ENDIF» INTO «FOR c : st.unstringIntoPhrase.unstringInto SEPARATOR '\n'» «c.id» «ENDFOR» «IF st.onOverflowPhrase !== null»
+	«IF st.onOverflowPhrase.on !== null» ON «ENDIF» OVERFLOW «FOR s : st.onOverflowPhrase.statement» «getStatement(s,'')» «ENDFOR»«ENDIF» 
+	«IF st.notOnOverflowPhrase !== null»NOT «IF st.notOnOverflowPhrase.on !== null»ON«ENDIF» OVERFLOW «FOR s : st.notOnOverflowPhrase.statement» «getStatement(s,'')» «ENDFOR»«ENDIF»
+	'''
 	
 	def performTimes(PerformType pt)'''
 	«IF pt.performTimes!==null»
