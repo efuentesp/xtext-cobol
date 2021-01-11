@@ -828,7 +828,7 @@ ConditionNameSubscriptReference : '(' subss+=Subscript (',' subss+=Subscript)* '
                                 
 RelationCombinedCondition : arithmeticL=ArithmeticExpression (andOr=('AND' | 'OR') arithmeticR=ArithmeticExpression);
 
-PlusMinus : ('+' | '-') MultDivs;
+PlusMinus : plusMinus=('+' | '-') multDivs=MultDivs;
 
 MultDivs : powers=Powers multDiv+=MultDiv*;
 
@@ -1281,7 +1281,7 @@ InitiateStatement: 'INITIATE' reportName+=ReportName;
 
 InspectStatement
    : 'INSPECT' id=Literal 
-   	( inspectTallyingPhrase=InspectTallyingPhrase 
+   	(inspectTallyingPhrase=InspectTallyingPhrase 
     | inspectReplacingPhrase=InspectReplacingPhrase 
    	| inspectTallyingReplacingPhrase=InspectTallyingReplacingPhrase
    	| inspectConvertingPhrase=InspectConvertingPhrase)
@@ -1307,13 +1307,13 @@ InspectTo : 'TO' id=ID; // | Literal);
 
 InspectBeforeAfter : beforeAfter=('BEFORE' | 'AFTER') 'INITIAL'? id=Literal; //id=(ID | Literal);
 
-InspectAllLeadings : allLeading=('ALL' | 'LEADING') inspectAllLeading=InspectAllLeading;
+InspectAllLeadings : allLeading=('ALL' | 'LEADING') (inspectAllLeading+=InspectAllLeading)+;
 
 InspectReplacingAllLeading : id=Literal inspectBy=InspectBy inspectBeforeAfter=InspectBeforeAfter;
 
 InspectBy: 'BY' id=Literal; // | Literal);
 
-InspectAllLeading : id=ID inspectBeforeAfter=InspectBeforeAfter; //id=(ID | Literal)
+InspectAllLeading : id=ID inspectBeforeAfter+=InspectBeforeAfter*; //id=(ID | Literal)
 
 MergeStatement
    : 'MERGE' FileName mergeOnKeyClause+=MergeOnKeyClause
@@ -1349,7 +1349,7 @@ MergeGiving : FileName ('LOCK' | 'SAVE' | 'NO' 'REWIND' | 'CRUNCH' | 'RELEASE' |
 
 MoveStatement : 'MOVE' 'ALL'? moveTo=(MoveToStatement | MoveCorrespondingToStatement);
 
-MoveToStatement : fromIdentifier=Identifier | from=Literal 'TO' (to+=Literal)+;
+MoveToStatement : (from=Literal | fromIdentifier=Identifier) 'TO' (to+=Literal)+;
 
 MoveCorrespondingToStatement : ('CORRESPONDING' | 'CORR') from=Literal 'TO' (to+=Literal)+;
 	                           
