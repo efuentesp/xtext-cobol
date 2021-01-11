@@ -65,6 +65,7 @@ import com.softtek.analyzer.cobol.cobol.SubtractFromStatement
 import com.softtek.analyzer.cobol.cobol.QualifiedDataName
 import com.softtek.analyzer.cobol.cobol.QualifiedDataNameFormat1
 import com.softtek.analyzer.cobol.cobol.StringForPhrase
+import com.softtek.analyzer.cobol.cobol.Identifier
 
 class ProcedureDivision {
 	def doGenerate(Resource resource, IFileSystemAccess2 fsa){
@@ -110,7 +111,7 @@ class ProcedureDivision {
 	'''
 	
 	def dispatch getStatement(MoveStatement st,String spaces) '''
-«spaces»MOVE «(st.moveTo as MoveToStatement).from» TO «FOR to:(st.moveTo as MoveToStatement).to» «to» «ENDFOR»
+«spaces»MOVE  «IF (st.moveTo as MoveToStatement).fromIdentifier!==null»FUNCTION «(st.moveTo as MoveToStatement).fromIdentifier.functionCall.functionName»(«FOR e:(st.moveTo as MoveToStatement).fromIdentifier.functionCall.args»«e.arithmeticExpression.multDivs.powers.basis.literal»«ENDFOR») «ENDIF» «(st.moveTo as MoveToStatement).from» TO «FOR to:(st.moveTo as MoveToStatement).to»«to»«ENDFOR»
 	'''
 	
 	def dispatch getStatement(AcceptStatement st,String spaces) '''
