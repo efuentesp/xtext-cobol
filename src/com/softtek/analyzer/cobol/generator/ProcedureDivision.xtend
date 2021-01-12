@@ -207,20 +207,23 @@ class ProcedureDivision {
 	def dispatch getStatement(PurgeStatement st, String spaces) ''''''
 	def dispatch getStatement(ReceiveStatement st, String spaces) ''''''
 	def dispatch getStatement(ReleaseStatement st, String spaces) '''
-	 RELEASE «(st.recordName as QualifiedDataNameFormat1).dataName» «IF st.from !==null» FROM «(st.from as QualifiedDataNameFormat1).dataName» «ENDIF»
+	 RELEASE «st.recordName.qualifiedDataName.qualifiedDataNameFormat1.dataName» «IF st.from !==null» FROM «st.from.qualifiedDataNameFormat1.dataName» «ENDIF»
 	'''
 	def dispatch getStatement(ReturnStatement st, String spaces) '''
 	 RETURN «st.fileName» «IF st.record!==null» «st.record» «ENDIF» «IF st.notAtEndPhrase!==null» NOT AT END «FOR s:st.notAtEndPhrase.statement» «getStatement(s,'')»«ENDFOR»«ENDIF» «IF st.atEndPhrase!==null» AT END «FOR s:st.atEndPhrase.statement» «getStatement(s,'')»«ENDFOR»«ENDIF»
 	'''
 	def dispatch getStatement(SearchStatement st, String spaces) '''
-	SEARCH «(st.qualifiedDataName as QualifiedDataNameFormat1).dataName» «IF st.atEndPhrase!==null» AT END «FOR s:st.atEndPhrase.statement» «getStatement(s,'')»«ENDFOR»«ENDIF» WHEN «FOR s:st.searchWhen» «getCondition(s.condition)» «ENDFOR»
+	SEARCH «st.qualifiedDataName.qualifiedDataNameFormat1.dataName» «IF st.atEndPhrase!==null» AT END «FOR s:st.atEndPhrase.statement» «getStatement(s,'')»«ENDFOR»«ENDIF» WHEN «FOR s:st.searchWhen» «getCondition(s.condition)» «ENDFOR»
 	'''
 	def dispatch getStatement(SendStatement st, String spaces) ''''''
 	def dispatch getStatement(SetStatement st, String spaces) '''
 	 SET «FOR s:st.setToStatement»«FOR setto: s.setTo» «setto.id» «ENDFOR» TO «FOR settov: s.setToValue»  «settov.literal» «ENDFOR»«ENDFOR»
 	'''
 	def dispatch getStatement(SortStatement st, String spaces) '''
-	SORT «st.filename» «FOR c:st.sortOnKeyClause» «c.asc» «ENDFOR»
+	SORT «st.filename»
+	«FOR c:st.sortOnKeyClause SEPARATOR '\n'»«IF c.on !== null» ON «ENDIF»«c.asc»«IF c.key !== null» «c.key» «ENDIF»«FOR q: c.qualifiedDataName» «q.qualifiedDataNameFormat1.dataName» «ENDFOR»«ENDFOR»
+	«IF st.sortInputProcedurePhrase !== null»INPUT PROCEDURE«IF st.sortInputProcedurePhrase.is !== null» IS «ENDIF» «st.sortInputProcedurePhrase.procedureName» «IF st.sortInputProcedurePhrase.sortInputThrough!==null» «st.sortInputProcedurePhrase.sortInputThrough.thru» «st.sortInputProcedurePhrase.sortInputThrough.procedureName»«ENDIF»«ENDIF»
+	«IF st.sortOutputProcedurePhrase !== null»OUTPUT PROCEDURE«IF st.sortOutputProcedurePhrase.is !== null» IS «ENDIF» «st.sortOutputProcedurePhrase.procedureName»  «IF st.sortOutputProcedurePhrase.sortOutputThrough!==null» «st.sortOutputProcedurePhrase.sortOutputThrough.thru» «st.sortOutputProcedurePhrase.sortOutputThrough.procedureName»«ENDIF»«ENDIF»
 	'''
 	def dispatch getStatement(StartStatement st, String spaces) ''''''
 	def dispatch getStatement(StringStatement st, String spaces) '''
@@ -270,6 +273,7 @@ class ProcedureDivision {
 	
 	//Conditions
 	
+//	IF com.softtek.analyzer.cobol.cobol.impl.QualifiedDataNameFormat1Impl@1bcac030 (reportDescriptionGlobalClause: null) (dataName: WKS-SELECCION-USUARIO, qualifiedInData: null)ISALPHABETIC THEN
 	
 	def dispatch getCondition(Condition cond)'''
 	«getCombinableCondition(cond)»«getAndOrCondition(cond)»
@@ -351,7 +355,9 @@ class ProcedureDivision {
 	
 	def getLeftOpClass(Condition cond){
 		if (cond.combinable.simpleCondition.classCondition.identifier.qualifiedDataName !== null){
-			return cond.combinable.simpleCondition.classCondition.identifier.qualifiedDataName
+			if (cond.combinable.simpleCondition.classCondition.identifier.qualifiedDataName.qualifiedDataNameFormat1 !== null){
+				return cond.combinable.simpleCondition.classCondition.identifier.qualifiedDataName.qualifiedDataNameFormat1.dataName
+			}
 			
 		}
 		if (cond.combinable.simpleCondition.classCondition.identifier.specialRegister !== null){
@@ -373,7 +379,7 @@ class ProcedureDivision {
 	def getOperatorClass(Condition cond){
 	 var op=''
 	 if (cond.combinable.simpleCondition.classCondition.is!==null)
-	   op=cond.combinable.simpleCondition.classCondition.is 
+	   op= ' ' + cond.combinable.simpleCondition.classCondition.is + ' '
 	 if (cond.combinable.simpleCondition.classCondition.not!==null)
 	   op=op + cond.combinable.simpleCondition.classCondition.not
 	  return op 

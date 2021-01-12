@@ -1012,7 +1012,7 @@ UseAfterOn : input='INPUT' | output='OUTPUT' | io='I-O' | extend='EXTEND' | file
 UseDebugOn : allProc='ALL' 'PROCEDURES' | allRef='ALL' 'REFERENCES'? 'OF'? id=ID | procedureName=ProcedureName /* | fileName=FileName*/;
 
 AcceptStatement
-   : 'ACCEPT' id=ID 
+   : 'ACCEPT' id=Literal 
    	   (
    	   	acceptFromDateStatement=AcceptFromDateStatement 
    	   	| acceptFromEscapeKeyStatement=AcceptFromEscapeKeyStatement 
@@ -1786,7 +1786,7 @@ ProcedureName : ID; //{ProcedureName} ParagraphName section=InSection? | Section
 
 ProgramName : ID; //NONNUMERICLITERAL | cobolWord;
 
-RecordName : QualifiedDataName;
+RecordName : qualifiedDataName=QualifiedDataName;
 
 ReportName : QualifiedDataName;
 
@@ -1807,10 +1807,10 @@ TextName : ID; // cobolWord
 
 
 QualifiedDataName
-   : QualifiedDataNameFormat1 
-     | QualifiedDataNameFormat2 
+   : qualifiedDataNameFormat1=QualifiedDataNameFormat1 
+     | qualifiedDataNameFormat2=QualifiedDataNameFormat2 
      //| QualifiedDataNameFormat3 
-     | QualifiedDataNameFormat4
+     | qualifiedDataNameFormat4=QualifiedDataNameFormat4
    ;
 
 QualifiedDataNameFormat1: dataName=(DataName) // | ConditionName) 
