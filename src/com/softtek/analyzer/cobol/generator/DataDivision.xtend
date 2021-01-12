@@ -47,7 +47,6 @@ class DataDivision {
 		
 		for (pUnit : model.programUnit){
 			var dDivision = pUnit.dataDivision.dataDivisionSection
-			
 			if(dDivision !== null){
 				for(section: dDivision){
 					vars = vars + getSection(section)
@@ -56,13 +55,24 @@ class DataDivision {
 
 		}
 		
-		return 'WORKING-STORAGE SECTION.\n' + vars
+		return  'DATA DIVISION.\n' + vars
 	}
 	// SECTIONS
 	
-	def dispatch getSection(FileSection fileSection){}
+	def dispatch getSection(FileSection fileSection)'''
+	FILE SECTION.
+	     FD FILE100.
+	     «IF fileSection.fileDescriptionEntry !== null»
+				«FOR fd: fileSection.fileDescriptionEntry»
+				   «FOR vars:fd.dataDescriptionEntry»
+					«vars.level» «vars.dataName» «FOR formatType : vars.data»«getVarProperty(formatType.data)»«ENDFOR»
+				   «ENDFOR»
+				«ENDFOR»
+		«ENDIF»
+	'''
 	def dispatch getSection(DataBaseSection dbSection){}
 	def dispatch getSection(WorkingStorageSection wStorageSection)'''
+	WORKING-STORAGE SECTION.
 		«IF wStorageSection.dataDescriptionEntry !== null»
 			«FOR vars: wStorageSection.dataDescriptionEntry»
 				«vars.level» «vars.dataName» «FOR formatType : vars.data»«getVarProperty(formatType.data)»«ENDFOR»

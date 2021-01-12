@@ -266,7 +266,7 @@ DataDivisionSection
 FileSection : 'FILE' 'SECTION' '.' fileDescriptionEntry+=FileDescriptionEntry*;
 
 FileDescriptionEntry : fd=('FD' | 'SD') name=FileName 
-	                   ('.'? fileDescriptionEntryClause=FileDescriptionEntryClause) '.' 
+	                   ('.'? fileDescriptionEntryClause+=FileDescriptionEntryClause*) '.' 
 	                   dataDescriptionEntry+=DataDescriptionEntry*
 ;
 

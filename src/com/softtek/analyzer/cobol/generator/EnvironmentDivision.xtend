@@ -6,7 +6,8 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 class EnvironmentDivision {
 	
 	def doGenerate(Resource resource, IFileSystemAccess2 fsa){
-		return 'TEST \n'
+		return '*ENVIRONMENT DIVISION. \n'
 	}
+	
 	
 }
